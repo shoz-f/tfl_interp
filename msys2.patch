@@ -1,0 +1,49 @@
+*** build/farmhash/src/farmhash.cc.org	Thu Jul 29 19:14:15 2021
+--- build/farmhash/src/farmhash.cc	Thu Jul 29 19:14:48 2021
+***************
+*** 114,120 ****
+  
+  #if defined(FARMHASH_UNKNOWN_ENDIAN) || !defined(bswap_64)
+  
+! #ifdef _MSC_VER
+  
+  #undef bswap_32
+  #undef bswap_64
+--- 114,120 ----
+  
+  #if defined(FARMHASH_UNKNOWN_ENDIAN) || !defined(bswap_64)
+  
+! #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
+  
+  #undef bswap_32
+  #undef bswap_64
+*** build/farmhash/src/farmhash.h.org	Thu Jul 29 19:14:30 2021
+--- build/farmhash//src/farmhash.h	Thu Jul 29 19:15:25 2021
+***************
+*** 305,310 ****
+--- 305,312 ----
+    #if !defined(FARMHASH_BIG_ENDIAN)
+      #define FARMHASH_BIG_ENDIAN
+    #endif
++ #elif defined(__MINGW32__) || defined(__MINGW64__)
++   // MinGW is (currently) little-endian
+  #elif defined(__linux__) || defined(__CYGWIN__) || defined( __GNUC__ ) || defined( __GNU_LIBRARY__ )
+    #include <endian.h> // libc6-dev, GLIBC
+    #if BYTE_ORDER == BIG_ENDIAN
+*** build/cpuinfo-source/src/x86/windows/init.c.org	Fri Jul 30 05:21:33 2021
+--- build/cpuinfo-source/src/x86/windows/init.c	Fri Jul 30 05:21:58 2021
+***************
+*** 10,15 ****
+--- 10,21 ----
+  
+  #include <windows.h>
+  
++ #ifndef max
++ static inline uint32_t max(uint32_t a, uint32_t b) {
++ 	return a > b ? a : b;
++ }
++ #endif
++ 
+  #ifdef __GNUC__
+    #define CPUINFO_ALLOCA __builtin_alloca
+  #else
