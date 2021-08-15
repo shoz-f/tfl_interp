@@ -9,7 +9,8 @@ defmodule TflInterp.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 
-      compilers: [:elixir_cmake]++Mix.compilers
+      #compilers: [:elixir_cmake]++Mix.compilers
+      cmake: cmake()
     ]
   end
 
@@ -23,9 +24,16 @@ defmodule TflInterp.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:poison, "~> 3.1"},
-      {:elixir_make, "~> 0.6.2", runtime: false},
-      {:elixir_cmake, path: "../elixir-cmake", runtime: false}
+      #{:elixir_make, "~> 0.6.2", runtime: false},
+      #{:elixir_cmake, path: "../elixir-cmake", runtime: false},
+      {:poison, "~> 3.1"}
+    ]
+  end
+  
+  defp cmake do
+    [
+      generator: "MSYS Makefiles",
+      build_dir: :share
     ]
   end
 end
