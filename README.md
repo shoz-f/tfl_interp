@@ -1,6 +1,8 @@
 # TflInterp
+Elixir module of Tensorflow lite interpreter.
 
-**TODO: Add description**
+## Platform
+- Windows MSYS2/MinGW64
 
 ## Installation
 
@@ -19,3 +21,5 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/tfl_interp](https://hexdocs.pm/tfl_interp).
 
+## License
+TflInterp is licensed under the Apache License Version 2.0.

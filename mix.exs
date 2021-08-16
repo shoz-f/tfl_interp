@@ -24,16 +24,14 @@ defmodule TflInterp.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      #{:elixir_make, "~> 0.6.2", runtime: false},
-      #{:elixir_cmake, path: "../elixir-cmake", runtime: false},
       {:poison, "~> 3.1"}
     ]
   end
   
   defp cmake do
     [
-      generator: "MSYS Makefiles",
-      build_dir: :share
+      build_dir: :share,
+      generator: "MSYS Makefiles"
     ]
   end
 end
