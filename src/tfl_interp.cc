@@ -25,6 +25,8 @@ using namespace std;
 #include "tfl_interp.h"
 #include "tfl_postprocess.h"
 
+#define TFLITE_EXPERIMENTAL 1
+
 /***  Global **************************************************************}}}*/
 /**
 * system infomation
@@ -79,6 +81,12 @@ info(const string&)
         res["outputs"].push_back(tf_lite_tensor);
     }
 
+#if TFLITE_EXPERIMENTAL
+    int first_node_id = gSys.mInterpreter->execution_plan()[0];
+    const auto& first_node_reg = 
+        gSys.mInterpreter->node_and_registration(first_node_id)->second;
+    res["XNNPack"] = (GetOpNameByRegistration(first_node_reg) == "DELEGATE TfLiteXNNPackDelegate");
+#endif
     return res.dump();
 }
 
