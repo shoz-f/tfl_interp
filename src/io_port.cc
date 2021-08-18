@@ -21,7 +21,7 @@ using namespace std;
 **/
 /**************************************************************************{{{*/
 union Magic {
-    unsigned long L;
+    unsigned int ui32;
     char C[4];
 };
 
@@ -49,12 +49,12 @@ rcv_packet_port(string& cmd_line)
         len.C[0] = cin.get();
 
         // receive packet payload
-        unique_ptr<char[]> buff(new char[len.L]);
-        cin.read(buff.get(), len.L);
+        unique_ptr<char[]> buff(new char[len.ui32]);
+        cin.read(buff.get(), len.ui32);
 
         // return received command line
-        cmd_line.assign(buff.get(), len.L);
-        return len.L;
+        cmd_line.assign(buff.get(), len.ui32);
+        return len.ui32;
     }
     catch(ios_base::failure) {
         return (cout.eof()) ? 0 : -1;
@@ -78,9 +78,9 @@ ssize_t
 snd_packet_port(string result)
 {
     try {
-        Magic len = { static_cast<unsigned long>(result.size()) };
+        Magic len = { static_cast<unsigned int>(result.size()) };
         (cout.put(len.C[3]).put(len.C[2]).put(len.C[1]).put(len.C[0]) << result).flush();
-        return len.L;
+        return len.ui32;
     }
     catch(ios_base::failure) {
         return (cout.eof()) ? 0 : -1;
