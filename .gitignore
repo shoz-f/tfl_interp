@@ -25,3 +25,6 @@ tfl_interp-*.tar
 
 # Temporary files for e.g. tests
 /tmp
+
+*~
+

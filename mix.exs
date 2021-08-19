@@ -9,7 +9,7 @@ defmodule TflInterp.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 
-      #compilers: [:elixir_cmake]++Mix.compilers
+      compilers: [:cmake]++Mix.compilers(),
       cmake: cmake()
     ]
   end
@@ -24,14 +24,18 @@ defmodule TflInterp.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:poison, "~> 3.1"}
+      {:poison, "~> 3.1"},
+      {:mix_cmake, git: "https://github.com/shoz-f/mix_cmake.git"}
     ]
   end
   
   defp cmake do
     [
-      build_dir: :share,
-#      generator: "MSYS Makefiles"
+      build_dir: :global,
+      #generator: "MSYS Makefiles",
+      #config_opts:  [],
+      build_opts:   ["-j4"],
+      #install_opts: []
     ]
   end
 end

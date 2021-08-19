@@ -3,6 +3,10 @@ Elixir module of Tensorflow lite interpreter.
 
 ## Platform
 - Windows MSYS2/MinGW64
+- WSL2/Ubuntu 20.04
+
+## Requirements
+- cmake 3.18.6 or later
 
 ## Installation
 
