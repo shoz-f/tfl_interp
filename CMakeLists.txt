@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 3.18.6)
+cmake_minimum_required(VERSION 3.18)
 project(tfl_interp CXX)
 
 # check requirements
@@ -51,5 +51,5 @@ target_link_libraries(tfl_interp
 
 install(TARGETS tfl_interp
   RUNTIME
-  DESTINATION $ENV{MIX_APP_PATH}/priv
+  DESTINATION priv
 )

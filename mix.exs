@@ -31,10 +31,13 @@ defmodule TflInterp.MixProject do
   
   defp cmake do
     [
-      build_dir: :global,
       #generator: "MSYS Makefiles",
+      build_dir: :global,
+      #source_dir: "."
+      #install_prefix: "."
+
       #config_opts:  [],
-      build_opts:   ["-j4"],
+      build_opts:   ["-j4", "--target", "tfl_interp/fast"],
       #install_opts: []
     ]
   end
