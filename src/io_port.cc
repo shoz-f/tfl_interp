@@ -36,7 +36,7 @@ union Magic {
 * @retval res <  0  error
 **/
 /**************************************************************************{{{*/
-ssize_t
+streamsize
 rcv_packet_port(string& cmd_line)
 {
     try {
@@ -74,7 +74,7 @@ rcv_packet_port(string& cmd_line)
 * @return count of sent byte or error code
 **/
 /**************************************************************************{{{*/
-ssize_t
+streamsize
 snd_packet_port(string result)
 {
     try {

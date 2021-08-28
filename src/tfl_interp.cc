@@ -34,7 +34,8 @@ using namespace std;
 /**************************************************************************{{{*/
 SysInfo gSys = {
     .mTiny      = false,
-    .mDiag      = 0
+    .mDiag      = 0,
+    .mNumThread = 4
 };
 
 /***  Module Header  ******************************************************}}}*/
@@ -51,9 +52,10 @@ info(const string&)
 {
     json res;
 
-    res["exe"  ] = gSys.mExe;
-    res["model"] = gSys.mTflModel;
-    res["class"] = gSys.mNumClass;
+    res["exe"  ]  = gSys.mExe;
+    res["model"]  = gSys.mTflModel;
+    res["class"]  = gSys.mNumClass;
+    res["thread"] = gSys.mNumThread;
     
     for (int index = 0; index < gSys.mInterpreter->inputs().size(); index++) {
         TfLiteTensor* itensor = gSys.mInterpreter->input_tensor(index);
@@ -204,7 +206,9 @@ interp(string& tfl_model, string& tfl_label)
         tflite::FlatBufferModel::BuildFromFile(tfl_model.c_str());
 
     tflite::ops::builtin::BuiltinOpResolver resolver;
-    InterpreterBuilder(*model, resolver)(&gSys.mInterpreter);
+    tflite::InterpreterBuilder builder(*model, resolver);
+    builder.SetNumThreads(gSys.mNumThread);
+    builder(&gSys.mInterpreter);
 
     if (gSys.mInterpreter->AllocateTensors() != kTfLiteOk) {
         cerr << "error: AllocateTensors()\n";
@@ -285,13 +289,14 @@ main(int argc, char* argv[])
 {
     int opt, longindex;
     struct option longopts[] = {
-        { "tiny",   no_argument,       NULL, 't' },
-        { "debug",  required_argument, NULL, 'd' },
-        { 0,        0,                 0,     0  },
+        { "tiny",     no_argument,       NULL, 't' },
+        { "debug",    required_argument, NULL, 'd' },
+        { "parallel", required_argument, NULL, 'j'},
+        { 0,          0,                 0,     0  },
     };
 
     for (;;) {
-        opt = getopt_long(argc, argv, "d:t", longopts, NULL);
+        opt = getopt_long(argc, argv, "d:tj:", longopts, NULL);
         if (opt == -1) {
             break;
         }
@@ -301,6 +306,9 @@ main(int argc, char* argv[])
             break;
         case 'd':
             gSys.mDiag = atoi(optarg);
+            break;
+        case 'j':
+            gSys.mNumThread = atoi(optarg);
             break;
         case '?':
         case ':':
@@ -320,7 +328,7 @@ main(int argc, char* argv[])
     gSys.mExe.assign(argv[0]);
     gSys.mTflModel.assign(argv[optind]);
     gSys.mTflLabel.assign(argv[optind+1]);
-
+ 
     // initialize i/o
     cin.exceptions(ios_base::badbit|ios_base::failbit|ios_base::eofbit);
     cout.exceptions(ios_base::badbit|ios_base::failbit|ios_base::eofbit);

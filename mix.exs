@@ -9,7 +9,6 @@ defmodule TflInterp.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 
-      compilers: [:cmake]++Mix.compilers(),
       cmake: cmake()
     ]
   end
@@ -25,20 +24,17 @@ defmodule TflInterp.MixProject do
   defp deps do
     [
       {:poison, "~> 3.1"},
-      {:mix_cmake, git: "https://github.com/shoz-f/mix_cmake.git"}
+      #{:mix_cmake, git: "https://github.com/shoz-f/mix_cmake.git"}
+      {:mix_cmake, path: "../../mix_cmake"}
     ]
   end
   
   defp cmake do
     [
-      #generator: "MSYS Makefiles",
       build_dir: :global,
       #source_dir: "."
-      #install_prefix: "."
-
-      #config_opts:  [],
-      build_opts:   ["-j4", "--target", "tfl_interp/fast"],
-      #install_opts: []
+      #generator: "MSYS Makefiles",
+      build_parallel_level: 4
     ]
   end
 end

@@ -28,15 +28,16 @@ using namespace tflite;
 * system information
 ***************************************************************************{{{*/
 struct SysInfo {
-    string          mExe;       // path of this executable
-    string          mTflModel;  // path of Tflite Model
-    string          mTflLabel;  // path of Class Labels
-    bool           mTiny;      // Yolo V3 tiny model
+    string        mExe;       // path of this executable
+    string        mTflModel;  // path of Tflite Model
+    string        mTflLabel;  // path of Class Labels
+    bool          mTiny;      // Yolo V3 tiny model
     unsigned long mDiag;      // diagnosis mode
+    int           mNumThread; // number of thread
 
     unique_ptr<Interpreter> mInterpreter;
     vector<string>          mLabel;
-    unsigned int          mNumClass;
+    unsigned int            mNumClass;
 
 /*
     steady_clock::time_point mWatchStart;

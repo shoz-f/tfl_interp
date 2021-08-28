@@ -51,5 +51,5 @@ target_link_libraries(tfl_interp
 
 install(TARGETS tfl_interp
   RUNTIME
-  DESTINATION priv
+  DESTINATION ${CMAKE_SOURCE_DIR}/priv
 )
