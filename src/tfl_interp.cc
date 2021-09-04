@@ -54,6 +54,7 @@ info(const string&)
 
     res["exe"  ]  = gSys.mExe;
     res["model"]  = gSys.mTflModel;
+    res["label"]  = gSys.mTflLabel;
     res["class"]  = gSys.mNumClass;
     res["thread"] = gSys.mNumThread;
     
@@ -216,16 +217,22 @@ interp(string& tfl_model, string& tfl_label)
     }
 
     // load labels
-    string   label;
-    ifstream lb_file(tfl_label);
-    if (lb_file.fail()) {
-        cerr << "error: Failed to open file\n";
-        exit(1);
+    if (tfl_label != "none") {
+        string   label;
+        ifstream lb_file(tfl_label);
+        if (lb_file.fail()) {
+            cerr << "error: Failed to open file\n";
+            exit(1);
+        }
+        while (getline(lb_file, label)) {
+            gSys.mLabel.emplace_back(label);
+        }
+        gSys.mNumClass = gSys.mLabel.size();
     }
-    while (getline(lb_file, label)) {
-        gSys.mLabel.emplace_back(label);
+    else {
+        gSys.mLabel.clear();
+        gSys.mNumClass = 0;
     }
-    gSys.mNumClass = gSys.mLabel.size();
 
     // REPL
     for (;;) {
@@ -291,7 +298,7 @@ main(int argc, char* argv[])
     struct option longopts[] = {
         { "tiny",     no_argument,       NULL, 't' },
         { "debug",    required_argument, NULL, 'd' },
-        { "parallel", required_argument, NULL, 'j'},
+        { "parallel", required_argument, NULL, 'j' },
         { 0,          0,                 0,     0  },
     };
 
@@ -317,7 +324,7 @@ main(int argc, char* argv[])
             return 1;
         }
     }
-    if ((argc - optind) < 1) {
+    if ((argc - optind) < 2) {
         // argument error
         cerr << "error: expect <model.tflite>\n\n";
         usage();

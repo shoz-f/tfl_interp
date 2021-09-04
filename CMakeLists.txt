@@ -39,6 +39,14 @@ IF(NOT EXISTS ${CMAKE_BINARY_DIR}/patched)
   file(TOUCH ${CMAKE_BINARY_DIR}/patched)
 endif()
 
+# add Nlohmann JSON
+FetchContent_Declare(nlohmann_json
+  GIT_REPOSITORY https://github.com/nlohmann/json.git
+  SOURCE_DIR "${CMAKE_BINARY_DIR}/nlohmann_json"
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
+
 # main
 add_executable(tfl_interp
   src/tfl_interp.cc
@@ -47,6 +55,7 @@ add_executable(tfl_interp
 )
 target_link_libraries(tfl_interp
   tensorflow-lite
+  nlohmann_json
 )
 
 install(TARGETS tfl_interp

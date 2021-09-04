@@ -37,7 +37,7 @@ struct SysInfo {
 
     unique_ptr<Interpreter> mInterpreter;
     vector<string>          mLabel;
-    unsigned int            mNumClass;
+    unsigned int          mNumClass;
 
 /*
     steady_clock::time_point mWatchStart;
