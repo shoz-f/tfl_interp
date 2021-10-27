@@ -32,8 +32,6 @@ defmodule TflInterp.MixProject do
   defp cmake do
     [
       build_dir: :global,
-      #source_dir: "."
-      #generator: "MSYS Makefiles",
       build_parallel_level: 4
     ]
   end
