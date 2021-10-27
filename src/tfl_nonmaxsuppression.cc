@@ -98,25 +98,16 @@ protected:
 **/
 /**************************************************************************{{{*/
 string
-non_max_suppression_multi_class(const string& args)
+non_max_suppression_multi_class(
+int           num_boxes,
+int           num_class,
+const float* boxes,
+const float* scores,
+float         iou_threshold,
+float         score_threshold,
+float         sigma)
 {
     json res;
-
-    struct Prms {
-        unsigned char  cmd;
-        unsigned char  idx_boxes;
-        unsigned char  idx_scores;
-        float           iou_threshold;
-        float           score_threshold;
-        float           sigma;
-    } __attribute__((packed));
-    const Prms*  prms = reinterpret_cast<const Prms*>(args.data());
-
-    TfLiteTensor* ts_boxes  = gSys.mInterpreter->output_tensor(prms->idx_boxes);
-    TfLiteTensor* ts_scores = gSys.mInterpreter->output_tensor(prms->idx_scores);
-
-    const int num_class = gSys.mNumClass;
-    const int num_boxes = ts_boxes->dims->data[1];
 
     // run nms over each classification class.
     for (int class_id = 0; class_id < num_class; class_id++) {
@@ -124,17 +115,17 @@ non_max_suppression_multi_class(const string& args)
         priority_queue<Box, deque<Box>, decltype(cmp)> candidates(cmp);
 
         // pick up candidates for focus class
-        const float* boxes  = ts_boxes->data.f;
-        const float* scores = ts_scores->data.f;
-        for (int i = 0; i < num_boxes; i++, boxes += 4, scores += num_class) {
-            if (scores[class_id] > prms->score_threshold) {
-                candidates.emplace(boxes, scores[class_id]);
+        const float* _boxes  = boxes;
+        const float* _scores = scores;
+        for (int i = 0; i < num_boxes; i++, _boxes += 4, _scores += num_class) {
+            if (_scores[class_id] > score_threshold) {
+                candidates.emplace(_boxes, _scores[class_id]);
             }
         }
         if (candidates.empty()) continue;
 
         // perform iou filtering
-        string class_name = gSys.mLabel[class_id];
+        string class_name = gSys.label(class_id);
         do {
             Box selected = candidates.top();  candidates.pop();
 
@@ -142,12 +133,12 @@ non_max_suppression_multi_class(const string& args)
 
             while (!candidates.empty()) {
                 float iou = selected.iou(candidates.top());
-                if (iou < prms->iou_threshold) { break; }
+                if (iou < iou_threshold) { break; }
 
-                if (prms->sigma > 0.0) {
+                if (sigma > 0.0) {
                     Box next = candidates.top(); candidates.pop();
-                    float soft_nms_score = next.get_score()*exp(-(iou*iou)/prms->sigma);
-                    if (soft_nms_score > prms->score_threshold) {
+                    float soft_nms_score = next.get_score()*exp(-(iou*iou)/sigma);
+                    if (soft_nms_score > score_threshold) {
                         next.set_score(soft_nms_score);
                         candidates.push(next);
                     }
@@ -160,6 +151,40 @@ non_max_suppression_multi_class(const string& args)
     }
 
     return res.dump();
+}
+
+/***  Module Header  ******************************************************}}}*/
+/**
+* Non Maximum Suppression for Multi Class
+* @par DESCRIPTION
+*   run non-maximum on every class
+*
+* @retval json
+**/
+/**************************************************************************{{{*/
+string
+non_max_suppression_multi_class(const string& args)
+{
+    struct Prms {
+        unsigned char cmd;
+        int             num_boxes;
+        int             num_class;
+        float          iou_threshold;
+        float          score_threshold;
+        float          sigma;
+        float          table[0];
+    } __attribute__((packed));
+    const Prms*  prms = reinterpret_cast<const Prms*>(args.data());
+
+    return non_max_suppression_multi_class(
+        prms->num_boxes,
+        prms->num_class,
+        &prms->table[0],
+        &prms->table[4*prms->num_boxes],
+        prms->iou_threshold,
+        prms->score_threshold,
+        prms->sigma
+    );
 }
 
 /*** tfl_nonmaxsuppression.cc *********************************************}}}*/

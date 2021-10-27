@@ -85,9 +85,9 @@ defmodule TflInterp do
   end
 
   @doc "execute post processing: nms"
-  def non_max_suppression_multi_class(mod, idx_boxes, idx_scores, iou_threshold \\ 0.5, score_threshold \\ 0.25, sigma \\ 0.0) do
+  def non_max_suppression_multi_class(mod, num_boxes, num_class, boxes, scores, iou_threshold \\ 0.5, score_threshold \\ 0.25, sigma \\ 0.0) do
     cmd = 4
-    case GenServer.call(mod, <<cmd::8, idx_boxes::8, idx_scores::8, iou_threshold::little-float-32, score_threshold::little-float-32, sigma::little-float-32>>, @timeout) do
+    case GenServer.call(mod, <<cmd::8, num_boxes::little-integer-32, num_class::little-integer-32, iou_threshold::little-float-32, score_threshold::little-float-32, sigma::little-float-32>> <> boxes <> scores, @timeout) do
       {:ok, result} -> Poison.decode(result)
       any -> any
     end

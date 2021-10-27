@@ -49,6 +49,15 @@ struct SysInfo {
     // i/o method
     ssize_t (*mRcv)(string& cmd_line);
     ssize_t (*mSnd)(string  result);
+    
+    string label(int id) {
+        if (id < mLabel.size()) {
+            return mLabel[id];
+        }
+        else {
+            return to_string(id);
+        }
+    }
 };
 extern SysInfo gSys;
 
