@@ -24,14 +24,14 @@ defmodule TflInterp.MixProject do
   defp deps do
     [
       {:poison, "~> 3.1"},
-      #{:mix_cmake, git: "https://github.com/shoz-f/mix_cmake.git"}
-      {:mix_cmake, path: "../../mix_cmake"}
+      {:mix_cmake, git: "https://github.com/shoz-f/mix_cmake.git"}
+      #{:mix_cmake, path: "../../mix_cmake"}
     ]
   end
   
   defp cmake do
     [
-      generator: "MSYS Makefiles",
+      #generator: "MSYS Makefiles",
       build_dir: :global,
       build_parallel_level: 4
     ]
