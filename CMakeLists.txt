@@ -23,6 +23,7 @@ if(NOT Patch_FOUND)
 endif()
 
 # add Tensorflow sources and modify
+message("** Download Tensorflow lite etc.")
 include(FetchContent)
 FetchContent_Declare(tensorflow
   GIT_REPOSITORY https://github.com/tensorflow/tensorflow.git
