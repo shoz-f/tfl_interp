@@ -1,6 +1,3 @@
-#
-# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,7 +29,7 @@ FetchContent_Declare(tensorflow
 )
 FetchContent_MakeAvailable(tensorflow)
 
-IF(NOT EXISTS ${CMAKE_BINARY_DIR}/patched)
+IF((${CMAKE_HOST_SYSTEM_NAME} MATCHES "^MSYS_NT.*") AND (NOT EXISTS ${CMAKE_BINARY_DIR}/patched))
   execute_process(
     COMMAND patch --verbos -p1 -i ${CMAKE_SOURCE_DIR}/msys2.patch
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
