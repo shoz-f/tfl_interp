@@ -24,12 +24,13 @@ message("** Download Tensorflow lite etc.")
 include(FetchContent)
 FetchContent_Declare(tensorflow
   GIT_REPOSITORY https://github.com/tensorflow/tensorflow.git
+  GIT_TAG        v2.7.0
   SOURCE_SUBDIR tensorflow/lite
   SOURCE_DIR "${CMAKE_BINARY_DIR}/tensorflow_src"
 )
 FetchContent_MakeAvailable(tensorflow)
 
-IF((${CMAKE_HOST_SYSTEM_NAME} MATCHES "^MSYS_NT.*") AND (NOT EXISTS ${CMAKE_BINARY_DIR}/patched))
+IF((${CMAKE_HOST_SYSTEM_NAME} MATCHES "Windows") AND (NOT EXISTS ${CMAKE_BINARY_DIR}/patched))
   execute_process(
     COMMAND patch --verbos -p1 -i ${CMAKE_SOURCE_DIR}/msys2.patch
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}

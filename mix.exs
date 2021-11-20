@@ -25,7 +25,7 @@ defmodule TflInterp.MixProject do
     [
       {:poison, "~> 3.1"},
       {:mix_cmake, git: "https://github.com/shoz-f/mix_cmake.git"}
-      #{:mix_cmake, path: "../../mix_cmake"}
+      #{:mix_cmake, "~> 0.1.0"},
     ]
   end
   
