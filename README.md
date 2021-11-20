@@ -1,24 +1,54 @@
 # TflInterp
 Tensorflow lite interpreter for Elixir.
+Deep Learning inference framework for embedded devices.
 
 ## Platform
+It has been confirmed to work in the following OS environment.
+
 - Windows MSYS2/MinGW64
 - WSL2/Ubuntu 20.04
 
 ## Requirements
 - cmake 3.18.6 or later
+- git
 
 ## Installation
-This module is designed for Poncho-style projects. So we recommended you create a parent directory and put both your application
-and this module under it.
+This module is designed for Poncho-style. Therefore, it cannot be installed by adding this module to your project's dependency list. Follow the steps below to install.
 
-```bash
-mkdir a_project
-cd a_project
-git clone https://github.com/shoz-f/tfl_interp.git
-mix new your_app
+Download `TflInterp` to a directory of your choice. I recommend that you put it in the same hierarchy as your Deep Learning project directory.
+
+```shell
+$ cd parent-of-your-project
+$ git clone https://github.com/shoz-f/tfl_interp.git
 ```
 
+Then you need to download the file set of Google Tensorflow and build `tfl_intep` executable (extended command called by Elixir) into ./priv.
+Don't worry. The mix_cmake utility will help you.
+
+```shell
+$ cd tfl_interp
+$ mix deps.get
+$ mix cmake --config
+
+;-) It takes a few minutes to download and build Tensorflow.
+```
+
+Now you are ready. The figure below shows the directory structure of tfl_interp.
+
+```
+- tfl_interp
+    +- _build
+    |    +- .cmake_build --- Tensorflow is downloaded here
+    +- deps
+    +- lib
+    +- priv
+    |    +- tfl_interp   --- Elixir Port extended command
+    +- src/
+    +- test/
+    +- CMakeLists.txt    --- Cmake configuration script
+    +- mix.exs           --- includes parameter for mix-cmake task
+    +- msys2.patch       --- Patch script for MSYS2/MinGW64
+```
 
 ## Usage
 
