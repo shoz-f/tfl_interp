@@ -4,10 +4,14 @@ defmodule TflInterp.MixProject do
   def project do
     [
       app: :tfl_interp,
-      version: "0.1.0",
+      version: "0.1.1",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
+      description: description(),
+      package: package(),
       deps: deps(),
+      name: "tfl_interp",
+      source_url: "https://github.com/shoz-f/tfl_interp.git",
 
       cmake: cmake()
     ]
@@ -24,16 +28,44 @@ defmodule TflInterp.MixProject do
   defp deps do
     [
       {:poison, "~> 3.1"},
-      {:mix_cmake, git: "https://github.com/shoz-f/mix_cmake.git"}
-      #{:mix_cmake, "~> 0.1.0"},
+      {:mix_cmake, "~> 0.1.0"},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
   
+  # Cmake configuration.
   defp cmake do
     [
+      # Specify cmake build directory or pseudo-path {:local, :global}.
+      #   :local(default) - "./_build/.cmake_build"
+      #   :global - "~/.#{Cmake.app_name()}"
+      #
+      #build_dir: :local,
+
+      # Specify cmake source directory.(default: File.cwd!)
+      #
+      #source_dir: File.cwd!,
+
+      # Specify generator name.
+      # "cmake --help" shows you build-in generators list.
+      #
       #generator: "MSYS Makefiles",
-      build_dir: :global,
+
+      # Specify jobs parallel level.
+      #
       build_parallel_level: 4
+    ]
+  end
+
+  defp description() do
+    "Tensorflow lite intepreter for Elixir."
+  end
+
+  defp package() do
+    [
+       name: "tfl_interp",
+      licenses: ["Apache-2.0"],
+      links: %{"GitHub" => "https://github.com/shoz-f/tfl_interp.git"}
     ]
   end
 end
