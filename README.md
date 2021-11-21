@@ -15,15 +15,16 @@ It has been confirmed to work in the following OS environment.
 ## Installation
 This module is designed for Poncho-style. Therefore, it cannot be installed by adding this module to your project's dependency list. Follow the steps below to install.
 
-Download `TflInterp` to a directory of your choice. I recommend that you put it in the same hierarchy as your Deep Learning project directory.
+Download `tfl_interp` to a directory of your choice. I recommend that you put it in the same hierarchy as your Deep Learning project directory.
 
 ```shell
 $ cd parent-of-your-project
 $ git clone https://github.com/shoz-f/tfl_interp.git
 ```
 
-Then you need to download the file set of Google Tensorflow and build `tfl_intep` executable (extended command called by Elixir) into ./priv.
-Don't worry. The mix_cmake utility will help you.
+Then you need to download the file set of Google Tensorflow and build `tfl_intep` executable (Port extended called by Elixir) into ./priv.
+
+Don't worry, `mix_cmake` utility will help you.
 
 ```shell
 $ cd tfl_interp
@@ -36,36 +37,74 @@ $ mix cmake --config
 Now you are ready. The figure below shows the directory structure of tfl_interp.
 
 ```
-- tfl_interp
-    +- _build
-    |    +- .cmake_build --- Tensorflow is downloaded here
-    +- deps
-    +- lib
-    +- priv
-    |    +- tfl_interp   --- Elixir Port extended command
-    +- src/
-    +- test/
-    +- CMakeLists.txt    --- Cmake configuration script
-    +- mix.exs           --- includes parameter for mix-cmake task
-    +- msys2.patch       --- Patch script for MSYS2/MinGW64
++- your-project
+|
++- tfl_interp
+     +- _build
+     |    +- .cmake_build --- Tensorflow is downloaded here
+     +- deps
+     +- lib
+     +- priv
+     |    +- tfl_interp   --- Elixir Port extended
+     +- src/
+     +- test/
+     +- CMakeLists.txt    --- Cmake configuration script
+     +- mix.exs           --- includes parameter for mix-cmake task
+     +- msys2.patch       --- Patch script for MSYS2/MinGW64
 ```
 
-## Usage
+## Basic Usage
+To use TflInterp in your project, you add the path to `tfl_interp` above to the  `mix.exs`:
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `tfl_interp` to your list of dependencies in `mix.exs`:
-
-```elixir
+```elixir:mix.exs
 def deps do
   [
-    {:tfl_interp, "~> 0.1.0"}
+    {:tfl_interp, path: "../tfl_interp"},
   ]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/tfl_interp](https://hexdocs.pm/tfl_interp).
+Then you put the trained model of Tensolflow lite in ./priv.
+
+```shell
+$ cp your-trained-model.tflite ./priv
+```
+
+The remaining task is to create a module that will interface with your Deep Learning model. The module will probably have pre-processing and post-processing in addition to inference processing, as in the code example below. TflInterp provides only inference processing.
+
+You put `use TflInterp` at the beginning of your module, specify the model path in optional arguments. The inference section involves inputing data to the model - `TflInterp.set_input_tensor/3`, executing it - `TflInterp.invoke/1`, and extracting the results - `TflInterp.get_output_tensor/2`.
+
+```elixr:your_model.ex
+defmodule YourApp.YourModel do
+  use TflInterp, model: "priv/your-trained-model.tflite"
+
+  def predict(data) do
+    # preprocess
+    #  to convert the data to be inferred to the input format of the model.
+    input_bin = convert-float32-binaries(data)
+
+    # inference
+    #  typical I/O data for Tensorflow lite models is a serialized 32-bit float tensor.
+    output_bin =
+      __MODULE__
+      |> TflInterp.set_input_tensor(0, input_bin)
+      |> TflInterp.invoke()
+      |> TflInterp.get_output_tensor(0)
+      
+    # postprocess
+    #  add your post-processing here.
+    #  you may need to reshape output_bin to tensor at first.
+    tensor = output_bin
+      |> Nx.from_binary({:f, 32})
+      |> Nx.reshape({size-x, size-y, :auto})
+
+    * your-postprocessing *
+    ...
+  end
+end
+```
+
+Let's enjoy ;-)
 
 ## License
 TflInterp is licensed under the Apache License Version 2.0.
