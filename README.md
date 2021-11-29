@@ -106,5 +106,16 @@ end
 
 Let's enjoy ;-)
 
+## Demo
+There is MNIST web application in demo_mnist directory. You can do it by following the steps below.
+
+```shell
+$ cd demo_mnist
+$ mix deps.get
+$ mix run --no-halt
+```
+
+And then, please open your browser with "http://localhost:500".
+
 ## License
 TflInterp is licensed under the Apache License Version 2.0.
