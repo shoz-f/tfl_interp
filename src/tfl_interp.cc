@@ -32,11 +32,7 @@ using namespace std;
 * system infomation
 **/
 /**************************************************************************{{{*/
-SysInfo gSys = {
-    .mTiny      = false,
-    .mDiag      = 0,
-    .mNumThread = 4
-};
+SysInfo gSys;
 
 /***  Module Header  ******************************************************}}}*/
 /**
@@ -202,6 +198,11 @@ const int gMaxCmd = sizeof(gCmdTbl)/sizeof(TflFunc);
 void
 interp(string& tfl_model, string& tfl_label)
 {
+    // initialize system environment
+    gSys.mTiny      = false;
+    gSys.mDiag      = 0;
+    gSys.mNumThread = 4;
+
     // load tensor flow lite model
     unique_ptr<tflite::FlatBufferModel> model =
         tflite::FlatBufferModel::BuildFromFile(tfl_model.c_str());
