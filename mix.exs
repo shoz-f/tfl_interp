@@ -4,7 +4,7 @@ defmodule TflInterp.MixProject do
   def project do
     [
       app: :tfl_interp,
-      version: "0.1.1",
+      version: "0.1.2",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -28,7 +28,7 @@ defmodule TflInterp.MixProject do
   defp deps do
     [
       {:poison, "~> 3.1"},
-      {:mix_cmake, "~> 0.1.0"},
+      {:mix_cmake, "~> 0.1.0", only: :dev, runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
