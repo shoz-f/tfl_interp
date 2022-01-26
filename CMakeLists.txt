@@ -21,27 +21,46 @@ endif()
 
 # add Tensorflow sources and modify
 message("** Download Tensorflow lite etc.")
+
 include(FetchContent)
+Set(FETCHCONTENT_QUIET FALSE)
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/3rd_party/tensorflow_src)
 FetchContent_Declare(tensorflow
   GIT_REPOSITORY https://github.com/tensorflow/tensorflow.git
   GIT_TAG        v2.7.0
+  GIT_PROGRESS   TRUE
+  SOURCE_DIR "${CMAKE_SOURCE_DIR}/3rd_party/tensorflow_src"
   SOURCE_SUBDIR tensorflow/lite
-  SOURCE_DIR "${CMAKE_BINARY_DIR}/tensorflow_src"
 )
+else()
+FetchContent_Declare(tensorflow
+  GIT_REPOSITORY #https://github.com/tensorflow/tensorflow.git
+  GIT_TAG        v2.7.0
+  GIT_PROGRESS   TRUE
+  SOURCE_DIR "${CMAKE_SOURCE_DIR}/3rd_party/tensorflow_src"
+  SOURCE_SUBDIR tensorflow/lite
+)
+endif()
+
 FetchContent_MakeAvailable(tensorflow)
 
-IF((${CMAKE_HOST_SYSTEM_NAME} MATCHES "Windows") AND (NOT EXISTS ${CMAKE_BINARY_DIR}/patched))
+IF((${CMAKE_HOST_SYSTEM_NAME} MATCHES "Windows") AND (NOT EXISTS ${CMAKE_SOURCE_DIR}/3rd_party/patched))
   execute_process(
-    COMMAND patch --verbos -p1 -i ${CMAKE_SOURCE_DIR}/msys2.patch
+    COMMAND patch --verbos -p1 -i ${CMAKE_SOURCE_DIR}/msys2.patch1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/3rd_party
+  )
+  execute_process(
+    COMMAND patch --verbos -p1 -i ${CMAKE_SOURCE_DIR}/msys2.patch2
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   )
-  file(TOUCH ${CMAKE_BINARY_DIR}/patched)
+  file(TOUCH ${CMAKE_SOURCE_DIR}/3rd_party/patched)
 endif()
 
 # add Nlohmann JSON
 FetchContent_Declare(nlohmann_json
   GIT_REPOSITORY https://github.com/nlohmann/json.git
-  SOURCE_DIR "${CMAKE_BINARY_DIR}/nlohmann_json"
+  GIT_PROGRESS   TRUE
+  SOURCE_DIR "${CMAKE_SOURCE_DIR}/3rd_party/nlohmann_json"
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
