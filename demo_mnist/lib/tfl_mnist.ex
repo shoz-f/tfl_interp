@@ -23,15 +23,15 @@ defmodule TflMnist do
   def apply(buff) do
     # preprocess
     bin = buff
-      |> CImg.load_from_memory()
-      |> CImg.get_gray(1)
-      |> CImg.get_resize({28,28})
-      |> CImg.to_flat(range: {0.0, 1.0})
+      |> CImg.from_binary()
+      |> CImg.gray(1)
+      |> CImg.resize({28,28})
+      |> CImg.to_binary(range: {0.0, 1.0})
 
     # prediction
     outputs =
       __MODULE__
-      |> TflInterp.set_input_tensor(0, bin.data)
+      |> TflInterp.set_input_tensor(0, bin)
       |> TflInterp.invoke()
       |> TflInterp.get_output_tensor(0)
 

@@ -25,7 +25,7 @@ defmodule TflMnist.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:plug_static_index_html, "~> 1.0"},
       {:jason, "~> 1.2"},
-      {:cimg, "~> 0.1.3"},
+      {:cimg, "~> 0.1.8"},
       {:tfl_interp, path: ".."}
     ]
   end
