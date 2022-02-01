@@ -67,7 +67,7 @@ defmodule TflInterp.MixProject do
        name: "tfl_interp",
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => "https://github.com/shoz-f/tfl_interp.git"},
-      files: ~w(lib mix.exs README* CHANGELOG* LICENSE* CMakeLists.txt msys2.patch src)
+      files: ~w(lib mix.exs README* CHANGELOG* LICENSE* CMakeLists.txt msys2.* *.cmake src)
     ]
   end
 end
