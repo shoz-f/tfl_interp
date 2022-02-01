@@ -275,8 +275,6 @@ void usage()
     cout
       << "tfl_interp [opts] <model.tflite> <class.label>\n"
       << "\toption:\n"
-      << "\t  -p       : Elixir/Erlang Ports interface\n"
-      << "\t  -n       : Normalize BBox predictions by 1.0x1.0\n"
       << "\t  -d <num> : diagnosis mode\n"
       << "\t             1 = save the formed image\n"
       << "\t             2 = save model's input/output tensors\n"

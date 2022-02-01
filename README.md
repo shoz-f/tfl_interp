@@ -2,6 +2,24 @@
 Tensorflow lite interpreter for Elixir.
 Deep Learning inference framework for embedded devices.
 
+## Design policy (Features)
+TflInterp is designed based on the following policy.
+
+1. Provide only the Deep Learning inference. It aims to the poor-resource devices such as IOT and mobile.
+2. Easy to understand. The inference part, excluding pre/post-processing, can be written in a few lines.
+3. Use trained models from major Deep Learning frameworks that are easy to obtain.
+4. Multiple inference models can be used from a single application.
+5. There are few dependent modules. It does not have image processing or matrix calculation functions.
+6. TflInterp does not block the erlang/elixir process scheduler. It runs as an OS process outside of elixir.
+7. The back-end inference engine can be easily replaced. It's easy to keep up with the latest Deep Learninig technology.
+
+And I'm trying to make TflInterp easy to install. 
+
+### short or concise history
+The development of Tflinterp started in 2020 Nov. The original idea was to use Nerves to create an AI remote controlled car.
+In the first version, I implemented Yolo3, but the design strongly depended on the model, which made it difficult to use in other applications.
+Reflecting on that mistake, I redesigned Tflinterp according to the above design guidelines.
+
 ## Platform
 It has been confirmed to work in the following OS environment.
 
@@ -68,7 +86,7 @@ It takes a long time to finish the build. Because it will download the required 
 ARM toolchain [^1], etc - at the first build time.
 Method 1 saves the downloaded files under "{your app}/deps/tfl_interp". On the other hand,
 method 2 saves them under "/home/{your home}/workdir/tfl_interp".
-If you want to reuse the downloaded files in other applications, we recommend Method 2.
+If you want to reuse the downloaded files in other applications, I recommend Method 2.
 
 In either method 1 or 2, the external modules required for Tensorflow lite are stored under
 "{your app}/_build/{target}/.cmake_build" according to the cmakelists.txt that comes with Tensorflow.
