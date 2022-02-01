@@ -5,78 +5,167 @@ defmodule TflInterp do
   Tensorflow lite intepreter for Elixir.
   Deep Learning inference framework for embedded devices.
 
+  ## Design policy (Features)
+  TflInterp is designed based on the following policy.
+
+  1. Provide only the Deep Learning inference. It aims to the poor-resource devices such as IOT and mobile.
+  2. Easy to understand. The inference part, excluding pre/post-processing, can be written in a few lines.
+  3. Use trained models from major Deep Learning frameworks that are easy to obtain.
+  4. Multiple inference models can be used from a single application.
+  5. There are few dependent modules. It does not have image processing or matrix calculation functions.
+  6. TflInterp does not block the erlang/elixir process scheduler. It runs as an OS process outside of elixir.
+  7. The back-end inference engine can be easily replaced. It's easy to keep up with the latest Deep Learninig technology.
+
+  And I'm trying to make TflInterp easy to install.
+
+  ### short or concise history
+  The development of Tflinterp started in 2020 Nov. The original idea was to use Nerves to create an AI remote controlled car.
+  In the first version, I implemented Yolo3, but the design strongly depended on the model, which made it difficult to use in other applications.
+  Reflecting on that mistake, I redesigned Tflinterp according to the above design guidelines.
+
   ## Installation
-  This module is designed for Poncho-style. Therefore, it cannot be installed
-  by adding this module to your project's dependency list. Follow the steps
-  below to install.
+  Since 0.1.3, the installation method of this module has changed.
+  You may need to remove previously installed TflInterp before installing new version.
 
-  Download `tfl_interp` to a directory of your choice. I recommend that you put
-  it in the same hierarchy as your Deep Learning project directory.
+  There are two installation methods. You can choose either one according to your purpose.
 
-  ```shell
-  $ cd parent-of-your-project
-  $ git clone https://github.com/shoz-f/tfl_interp.git
-  ```
-
-  Then you need to download the file set of Google Tensorflow and build
-  `tfl_intep` executable (Port extended called by Elixir) into ./priv.
-
-  Don't worry, `mix_cmake` utility will help you.
-
-  ```shell
-  $ cd tfl_interp
-  $ mix deps.get
-  $ mix cmake --config
-
-  ;-) It takes a few minutes to download and build Tensorflow.
-  ```
-
-  Now you are ready. The figure below shows the directory structure of tfl_interp.
+  1. Like any other elixir module, add TflInterp to the dependency list in the mix.exs.
 
   ```
-  +- your-project
-  |
-  +- tfl_interp
-       +- _build
-       |    +- .cmake_build --- Tensorflow is downloaded here
-       +- deps
-       +- lib
-       +- priv
-       |    +- tfl_interp   --- Elixir Port extended
-       +- src/
-       +- test/
-       +- CMakeLists.txt    --- Cmake configuration script
-       +- mix.exs           --- includes parameter for mix-cmake task
-       +- msys2.patch       --- Patch script for MSYS2/MinGW64
-  ```
-
-  ## Basic Usage
-  To use TflInterp in your project, you add the path to `tfl_interp` above to
-  the `mix.exs`:
-
-  ```elixir:mix.exs
   def deps do
     [
-      {:tfl_interp, path: "../tfl_interp"},
+      ...
+      {:tfl_interp, github: "shoz-f/tfl_interp", branch: "nerves"}
     ]
   end
   ```
 
-  Then you put the trained model of Tensolflow lite in ./priv.
+  2. Download TflInterp to a directory in advance, and add that path to the dependency list in mix.exs.
 
-  ```shell
-  $ cp your-trained-model.tflite ./priv
+  ```
+  # download TflInterp in advance.
+  $ cd /home/{your home}/workdir
+  $ git clone -b nerves https://github.com/shoz-f/tfl_interp.git
   ```
 
-  The remaining task is to create a module that will interface with your Deep
-  Learning model. The module will probably have pre-processing and post-processing
-  in addition to inference processing, as in the code example below. TflInterp
-  provides only inference processing.
+  ```
+  def deps do
+    [
+      ...
+      {:tfl_interp, path: "/home/{your home}/workdir/tfl_interp"}
+    ]
+  end
+  ```
 
-  You put `use TflInterp` at the beginning of your module, specify the model path
-  in optional arguments. The inference section involves inputing data to the
-  model - `TflInterp.set_input_tensor/3`, executing it - `TflInterp.invoke/1`,
-  and extracting the results - `TflInterp.get_output_tensor/2`.
+  Then you run the following commands in your application project.
+
+  For native application:
+
+  ```
+  $ mix deps.get
+  $ mix compile
+  ```
+
+  For Nerves application:
+
+  ```
+  $ export MIX_TARGET=rpi3  # <- specify target device tag
+  $ mix deps.get
+  $ mix firmware
+  ```
+
+  It takes a long time to finish the build. Because it will download the required files - Tensorflow sources,
+  ARM toolchain [^1], etc - at the first build time.
+  Method 1 saves the downloaded files under "{your app}/deps/tfl_interp". On the other hand,
+  method 2 saves them under "/home/{your home}/workdir/tfl_interp".
+  If you want to reuse the downloaded files in other applications, we recommend Method 2.
+
+  In either method 1 or 2, the external modules required for Tensorflow lite are stored under
+  "{your app}/_build/{target}/.cmake_build" according to the cmakelists.txt that comes with Tensorflow.
+
+   [^1] Unfortunately, the ARM toolchain that comes with Nerves can not build Tensorflow lite. We need to get the toolchain recommended by the Tensorflow project.
+
+  After installation, you will have the directory tree like these:
+
+  Method 1
+
+  ```
+  work_dir
+    +- your-app
+         +- _build/
+         |    +- dev/
+         |         +- .cmake_build/ --- CMakeCash.txt and external modules that Tensorflowlite depends on.
+         |         |                    The cmake build outputs are stored here also.
+         |         +- lib/
+         |         |    +- tfl_interp
+         |         |         +- ebin/
+         |         |         +- priv
+         |         |              +- tfl_interp --- executable: tensorflow interpreter.
+         |         :
+         |
+         +- deps/
+         |    + tfl_interp
+         |    |   +- 3rd_party/ --- Tensorflow sources, etc.
+         |    |   +- lib/ --- TflInterp module.
+         |    |   +- src/ --- tfl_interp C++ sources.
+         |    |   +- test/
+         |    |   +- toolchain/ --- ARM toolchains for Nerves.
+         |    |   +- CMakeLists.txt --- CMake configuration for for building tfl_interp.
+         |    |   +- mix.exs
+         |    :
+         |
+         +- lib/
+         +- test/
+         +- mix.exs
+  ```
+
+  Method 2
+
+  ```
+  work_dir
+    +- your-app
+    |    +- _build/
+    |    |    +- dev/
+    |    |         +- .cmake_build/ --- CMakeCash.txt and external modules that Tensorflowlite depends on.
+    |    |         |                    The cmake build outputs are stored here also.
+    |    |         +- lib/
+    |    |         |    +- tfl_interp
+    |    |         |         +- ebin/
+    |    |         |         +- priv
+    |    |         |              +- tfl_interp --- executable: tensorflow interpreter.
+    |    |         :
+    |    |
+    |    +- deps/
+    |    +- lib/
+    |    +- test/
+    |    +- mix.exs
+    |
+    +- tfl_interp
+         +- 3rd_party/ --- Tensorflow sources, etc.
+         +- lib/ --- TflInterp module.
+         +- src/ --- tfl_interp C++ sources.
+         +- test/
+         +- toolchain/ --- ARM toolchains for Nerves.
+         +- CMakeLists.txt --- CMake configuration for for building tfl_interp.
+         +- mix.exs
+  ```
+
+  ## Basic Usage
+  You get the trained tflite model and save it in a directory that your application can read.
+  "your-app/priv" may be good choice.
+  
+  ```
+  $ cp your-trained-model.tflite ./priv
+  ```
+  
+  Next, you will create a module that interfaces with the deep learning model. 
+  The module will need pre-processing and post-processing in addition to inference
+  processing, as in the example following. TflInterp provides inference processing
+  only.
+  
+  You put `use TflInterp` at the beginning of your module, specify the model path as an optional argument. In the inference
+  section, you will put data input to the model (`TflInterp.set_input_tensor/3`), inference execution (`TflInterp.invoke/1`),
+  and inference result retrieval (`TflInterp.get_output_tensor/2`).
 
   ```elixr:your_model.ex
   defmodule YourApp.YourModel do
@@ -153,7 +242,7 @@ defmodule TflInterp do
   Get the propaty of the tflite model.
 
   ## Parameters
-  
+
     * mod - modules' names
   """
   def info(mod) do
@@ -168,7 +257,7 @@ defmodule TflInterp do
   Stop the tflite interpreter.
 
   ## Parameters
-  
+
     * mod - modules' names
   """
   def stop(mod) do
@@ -179,7 +268,7 @@ defmodule TflInterp do
   Put a flat binary to the input tensor on the interpreter.
 
   ## Parameters
-  
+
     * mod   - modules' names
     * index - index of input tensor in the model
     * bin   - input data - flat binary, cf. serialized tensor
@@ -197,7 +286,7 @@ defmodule TflInterp do
   Invoke prediction.
 
   ## Parameters
-  
+
     * mod - modules' names
   """
   def invoke(mod) do
@@ -229,7 +318,7 @@ defmodule TflInterp do
   Execute post processing: nms.
 
   ## Parameters
-  
+
     * mod             - modules' names
     * num_boxes       - number of candidate boxes
     * num_class       - number of category class

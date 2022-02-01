@@ -4,9 +4,10 @@ defmodule TflInterp.MixProject do
   def project do
     [
       app: :tfl_interp,
-      version: "0.1.2",
+      version: "0.1.3",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
+      compilers: [:cmake] ++ Mix.compilers(),
       description: description(),
       package: package(),
       deps: deps(),
@@ -28,7 +29,7 @@ defmodule TflInterp.MixProject do
   defp deps do
     [
       {:poison, "~> 3.1"},
-      {:mix_cmake, "~> 0.1.0", only: :dev, runtime: false},
+      {:mix_cmake, "~> 0.1.2"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
@@ -66,7 +67,7 @@ defmodule TflInterp.MixProject do
        name: "tfl_interp",
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => "https://github.com/shoz-f/tfl_interp.git"},
-      files: ~w(lib mix.exs README* CHANGELOG* LICENSE* CMakeLists.txt msys2.patch src)
+      files: ~w(lib mix.exs README* CHANGELOG* LICENSE* CMakeLists.txt msys2.* *.cmake src)
     ]
   end
 end

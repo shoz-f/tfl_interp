@@ -1,0 +1,12 @@
+*** build/tensorflow_src/tensorflow/lite/simple_memory_arena_debug_dump.cc.org	Sat Nov 20 16:03:49 2021
+--- build/tensorflow_src/tensorflow/lite/simple_memory_arena_debug_dump.cc	Sat Nov 20 16:04:08 2021
+***************
+*** 18,23 ****
+--- 18,24 ----
+  #include <queue>
+  #include <string>
+  #include <vector>
++ #include <limits>
+  
+  #include "tensorflow/lite/simple_memory_arena.h"
+  
