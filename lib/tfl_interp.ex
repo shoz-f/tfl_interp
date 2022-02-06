@@ -1,6 +1,4 @@
 defmodule TflInterp do
-  @timeout 300000
-
   @moduledoc """
   Tensorflow lite intepreter for Elixir.
   Deep Learning inference framework for embedded devices.
@@ -198,6 +196,9 @@ defmodule TflInterp do
   ```
   """
 
+  @timeout 300000
+  @padding 0
+
   defmacro __using__(opts) do
     quote generated: true, location: :keep do
       use GenServer
@@ -331,7 +332,7 @@ defmodule TflInterp do
 
   def non_max_suppression_multi_class(mod, {num_boxes, num_class}, boxes, scores, iou_threshold \\ 0.5, score_threshold \\ 0.25, sigma \\ 0.0) do
     cmd = 4
-    case GenServer.call(mod, <<cmd::8, num_boxes::little-integer-32, num_class::little-integer-32, iou_threshold::little-float-32, score_threshold::little-float-32, sigma::little-float-32>> <> boxes <> scores, @timeout) do
+    case GenServer.call(mod, <<cmd::8, @padding::8*3, num_boxes::little-integer-32, num_class::little-integer-32, iou_threshold::little-float-32, score_threshold::little-float-32, sigma::little-float-32>> <> boxes <> scores, @timeout) do
       {:ok, result} -> Poison.decode(result)
       any -> any
     end

@@ -54,6 +54,11 @@ public:
         }
     }
 
+    // Comparison operation
+    bool less(const Box& b) const {
+        return mScore < b.mScore;
+    }
+
     // put out the scaled BBox in JSON formatting
     json to_json() const {
         auto result = json::array();
@@ -75,18 +80,17 @@ public:
         return mScore;
     }
 
-//ACCESSOR:
-public:
-    float score() {
-        return mScore;
-    }
-
 //ATTRIBUTE:
 protected:
     float         mBBox[4];
     float         mArea;
     float         mScore;
 };
+
+// Comparison operator for Boxes
+bool operator< (const Box& a, const Box& b) {
+    return a.less(b);
+}
 
 /***  Module Header  ******************************************************}}}*/
 /**
@@ -108,12 +112,10 @@ float         score_threshold,
 float         sigma)
 {
     json res;
+    priority_queue<Box> candidates;
 
     // run nms over each classification class.
     for (int class_id = 0; class_id < num_class; class_id++) {
-        auto cmp = [](Box& a, Box& b){ return a.score() < b.score(); };
-        priority_queue<Box, deque<Box>, decltype(cmp)> candidates(cmp);
-
         // pick up candidates for focus class
         const float* _boxes  = boxes;
         const float* _scores = scores;
@@ -167,6 +169,7 @@ non_max_suppression_multi_class(const string& args)
 {
     struct Prms {
         unsigned char cmd;
+        unsigned char _1[3];
         int             num_boxes;
         int             num_class;
         float          iou_threshold;
@@ -175,7 +178,19 @@ non_max_suppression_multi_class(const string& args)
         float          table[0];
     } __attribute__((packed));
     const Prms*  prms = reinterpret_cast<const Prms*>(args.data());
+/*+DEBUG:shoz:22/02/06:
+    json res;
+    res["num_boxes"]       = prms->num_boxes;
+    res["num_class"]       = prms->num_class;
+    res["iou_threshold"]   = prms->iou_threshold;
+    res["score_threshold"] = prms->score_threshold;
+    res["sigma"]           = prms->sigma;
+    res["item"]            = prms->table[0];
+    res["boxes"]           = (long)(&prms->table[0]);
+    res["scores"]          = (long)(&prms->table[4*prms->num_boxes]);
+    return res.dump();
 
+/**/
     return non_max_suppression_multi_class(
         prms->num_boxes,
         prms->num_class,
@@ -185,6 +200,7 @@ non_max_suppression_multi_class(const string& args)
         prms->score_threshold,
         prms->sigma
     );
+/**/
 }
 
 /*** tfl_nonmaxsuppression.cc *********************************************}}}*/
