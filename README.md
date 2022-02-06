@@ -67,7 +67,7 @@ end
 
 Then you run the following commands in your application project.
 
-For native application:
+For Desktop application:
 
 ```
 $ mix deps.get
