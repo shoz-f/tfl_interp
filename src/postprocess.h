@@ -1,6 +1,6 @@
 /***  File Header  ************************************************************/
 /**
-* tfl_postprocess.h
+* postprocess.h
 *
 * system setting - used throughout the system
 * @author	   Shozo Fukuda
@@ -8,14 +8,15 @@
 * System	   MINGW64/Windows 10<br>
 *
 *******************************************************************************/
-#ifndef _TFL_POSTPROCESS_H
-#define _TFL_POSTPROCESS_H
-
-#include "tfl_interp.h"
+#ifndef _POSTPROCESS_H
+#define _POSTPROCESS_H
 
 /**************************************************************************}}}**
 * 
 ***************************************************************************{{{*/
-string non_max_suppression_multi_class(const string& args);
+TMLFunc non_max_suppression_multi_class;
 
-#endif /* _TFL_POSTPROCESS_H */
+#define POST_PROCESS \
+    non_max_suppression_multi_class,
+
+#endif /* _POSTPROCESS_H */

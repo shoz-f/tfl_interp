@@ -13,7 +13,6 @@
 #include <iostream>
 #include <string>
 #include <memory>
-using namespace std;
 
 /***  Type ****************************************************************}}}*/
 /**
@@ -36,31 +35,31 @@ union Magic {
 * @retval res <  0  error
 **/
 /**************************************************************************{{{*/
-streamsize
-rcv_packet_port(string& cmd_line)
+std::streamsize
+rcv_packet_port(std::string& cmd_line)
 {
     try {
         // receive packet size
         Magic len;
         /*+KNOWLEDGE:shoz:20/11/24:can't work "cin.get(len.C[3]).get(len.C[2]).." in WSL */
-        len.C[3] = cin.get();
-        len.C[2] = cin.get();
-        len.C[1] = cin.get();
-        len.C[0] = cin.get();
+        len.C[3] = std::cin.get();
+        len.C[2] = std::cin.get();
+        len.C[1] = std::cin.get();
+        len.C[0] = std::cin.get();
 
         // receive packet payload
-        unique_ptr<char[]> buff(new char[len.ui32]);
-        cin.read(buff.get(), len.ui32);
+        std::unique_ptr<char[]> buff(new char[len.ui32]);
+        std::cin.read(buff.get(), len.ui32);
 
         // return received command line
         cmd_line.assign(buff.get(), len.ui32);
         return len.ui32;
     }
-    catch(ios_base::failure) {
-        return (cout.eof()) ? 0 : -1;
+    catch(std::ios_base::failure) {
+        return (std::cout.eof()) ? 0 : -1;
     }
     catch (std::bad_alloc& e) {
-        cerr << e.what() << "@rcv_packet_port" << endl;
+        std::cerr << e.what() << "@rcv_packet_port" << std::endl;
         return -1;
     }
 }
@@ -74,16 +73,16 @@ rcv_packet_port(string& cmd_line)
 * @return count of sent byte or error code
 **/
 /**************************************************************************{{{*/
-streamsize
-snd_packet_port(string result)
+std::streamsize
+snd_packet_port(std::string result)
 {
     try {
         Magic len = { static_cast<unsigned int>(result.size()) };
-        (cout.put(len.C[3]).put(len.C[2]).put(len.C[1]).put(len.C[0]) << result).flush();
+        (std::cout.put(len.C[3]).put(len.C[2]).put(len.C[1]).put(len.C[0]) << result).flush();
         return len.ui32;
     }
-    catch(ios_base::failure) {
-        return (cout.eof()) ? 0 : -1;
+    catch(std::ios_base::failure) {
+        return (std::cout.eof()) ? 0 : -1;
     }
 }
 

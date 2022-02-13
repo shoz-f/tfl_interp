@@ -10,29 +10,38 @@
 **/
 /**************************************************************************{{{*/
 
-#include <iostream>
-#include <fstream>
-#include <string>
-using namespace std;
+#include "tiny_ml.h"
 
-#ifdef _WIN32
-#include <fcntl.h>
-#include <io.h>
-#endif
-
-#include <getopt.h>
-
-#include "tfl_interp.h"
-#include "tfl_postprocess.h"
+#include "tensorflow/lite/kernels/register.h"
+#include "tensorflow/lite/model.h"
 
 #define TFLITE_EXPERIMENTAL 1
 
-/***  Global **************************************************************}}}*/
+/***  Module Header  ******************************************************}}}*/
 /**
-* system infomation
+* initialize interpreter
+* @par DESCRIPTION
+*   
+*
+* @retval 
 **/
 /**************************************************************************{{{*/
-SysInfo gSys;
+void init_interp(std::string& tfl_model)
+{
+    // load tensor flow lite model
+    std::unique_ptr<tflite::FlatBufferModel> model =
+        tflite::FlatBufferModel::BuildFromFile(tfl_model.c_str());
+
+    tflite::ops::builtin::BuiltinOpResolver resolver;
+    tflite::InterpreterBuilder builder(*model, resolver);
+    builder.SetNumThreads(gSys.mNumThread);
+    builder(&gSys.mInterpreter);
+
+    if (gSys.mInterpreter->AllocateTensors() != kTfLiteOk) {
+        std::cerr << "error: AllocateTensors()\n";
+        exit(1);
+    }
+}
 
 /***  Module Header  ******************************************************}}}*/
 /**
@@ -43,14 +52,14 @@ SysInfo gSys;
 * @retval 
 **/
 /**************************************************************************{{{*/
-string
-info(const string&)
+std::string
+info(const std::string&)
 {
     json res;
 
     res["exe"  ]  = gSys.mExe;
-    res["model"]  = gSys.mTflModel;
-    res["label"]  = gSys.mTflLabel;
+    res["model"]  = gSys.mModelPath;
+    res["label"]  = gSys.mLabelPath;
     res["class"]  = gSys.mNumClass;
     res["thread"] = gSys.mNumThread;
     
@@ -58,8 +67,8 @@ info(const string&)
         TfLiteTensor* itensor = gSys.mInterpreter->input_tensor(index);
 
         json tf_lite_tensor;
-        tf_lite_tensor["name"] = string(itensor->name);
-        tf_lite_tensor["type"] = string(TfLiteTypeGetName(itensor->type));
+        tf_lite_tensor["name"] = std::string(itensor->name);
+        tf_lite_tensor["type"] = std::string(TfLiteTypeGetName(itensor->type));
         for (int i = 0; i < itensor->dims->size; i++) {
             tf_lite_tensor["dims"].push_back(itensor->dims->data[i]);
         }
@@ -71,8 +80,8 @@ info(const string&)
         TfLiteTensor* itensor = gSys.mInterpreter->output_tensor(index);
 
         json tf_lite_tensor;
-        tf_lite_tensor["name"] = string(itensor->name);
-        tf_lite_tensor["type"] = string(TfLiteTypeGetName(itensor->type));
+        tf_lite_tensor["name"] = std::string(itensor->name);
+        tf_lite_tensor["type"] = std::string(TfLiteTypeGetName(itensor->type));
         for (int i = 0; i < itensor->dims->size; i++) {
             tf_lite_tensor["dims"].push_back(itensor->dims->data[i]);
         }
@@ -84,7 +93,7 @@ info(const string&)
     int first_node_id = gSys.mInterpreter->execution_plan()[0];
     const auto& first_node_reg = 
         gSys.mInterpreter->node_and_registration(first_node_id)->second;
-    res["XNNPack"] = (GetOpNameByRegistration(first_node_reg) == "DELEGATE TfLiteXNNPackDelegate");
+    res["XNNPack"] = (tflite::GetOpNameByRegistration(first_node_reg) == "DELEGATE TfLiteXNNPackDelegate");
 #endif
     return res.dump();
 }
@@ -98,15 +107,19 @@ info(const string&)
 * @retval 
 **/
 /**************************************************************************{{{*/
-string
-set_input_tensor(const string& args)
+std::string
+set_input_tensor(const std::string& args)
 {
     json res;
 
     struct Prms {
         unsigned char cmd;
         unsigned char index;
-        char data[0];
+        unsigned char dtype;
+        unsigned char _1;
+        float          min;
+        float          max;
+        uint8_t         data[0];
     } __attribute__((packed));
     const Prms*  prms = reinterpret_cast<const Prms*>(args.data());
     const size_t size = args.size() - sizeof(Prms);
@@ -117,13 +130,43 @@ set_input_tensor(const string& args)
     }
     TfLiteTensor* itensor = gSys.mInterpreter->input_tensor(prms->index);
 
-    if (size != itensor->bytes) {
-        res["status"] = -2;
-        return res.dump();
-    }
-    
-    memcpy(itensor->data.raw, prms->data, itensor->bytes);
     res["status"] = 0;
+    switch (prms->dtype) {
+    case 0:
+        if (size == itensor->bytes) {
+            memcpy(itensor->data.raw, prms->data, itensor->bytes);
+        }
+        else {
+            res["status"] = -2;
+        }
+        break;
+
+    case 1:
+        if (size == itensor->bytes/sizeof(float)) {
+            float rang = (prms->max - prms->min)/255.0;
+            float base = prms->min;
+
+            float* dst = itensor->data.f;
+            const uint8_t* src = prms->data;
+            for (int i = 0; i < (itensor->bytes/sizeof(float)); i++) {
+                *dst = (rang * (*src)) - base;
+                dst++;
+                src++;
+            }
+        }
+        else {
+            res["status"] = -2;
+        }
+        break;
+
+    case 2:
+        res["status"] = -3;
+        break;
+    default:
+        res["status"] = -3;
+        break;
+    }
+
     return res.dump();
 }
 
@@ -136,8 +179,8 @@ set_input_tensor(const string& args)
 * @retval 
 **/
 /**************************************************************************{{{*/
-string
-invoke(const string&)
+std::string
+invoke(const std::string&)
 {
     json res;
 
@@ -154,8 +197,8 @@ invoke(const string&)
 * @retval 
 **/
 /**************************************************************************{{{*/
-string
-get_output_tensor(const string& args)
+std::string
+get_output_tensor(const std::string& args)
 {
     json res;
 
@@ -166,190 +209,11 @@ get_output_tensor(const string& args)
     const Prms*  prms = reinterpret_cast<const Prms*>(args.data());
 
     if (prms->index >= gSys.mInterpreter->outputs().size()) {
-        return string("");
+        return std::string("");
     }
     TfLiteTensor* otensor = gSys.mInterpreter->output_tensor(prms->index);
 
-    return string(otensor->data.raw, otensor->bytes);
-}
-
-/**************************************************************************}}}**
-* command dispatch table
-***************************************************************************{{{*/
-typedef string (*TflFunc)(const string&);
-
-TflFunc gCmdTbl[] = {
-    info,
-    set_input_tensor,
-    invoke,
-    get_output_tensor,
-    non_max_suppression_multi_class,
-};
-
-const int gMaxCmd = sizeof(gCmdTbl)/sizeof(TflFunc);
-
-/***  Module Header  ******************************************************}}}*/
-/**
-* tensor flow lite interpreter
-* @par DESCRIPTION
-*   
-**/
-/**************************************************************************{{{*/
-void
-interp(string& tfl_model, string& tfl_label)
-{
-    // initialize system environment
-    gSys.mTiny      = false;
-    gSys.mDiag      = 0;
-    gSys.mNumThread = 4;
-
-    // load tensor flow lite model
-    unique_ptr<tflite::FlatBufferModel> model =
-        tflite::FlatBufferModel::BuildFromFile(tfl_model.c_str());
-
-    tflite::ops::builtin::BuiltinOpResolver resolver;
-    tflite::InterpreterBuilder builder(*model, resolver);
-    builder.SetNumThreads(gSys.mNumThread);
-    builder(&gSys.mInterpreter);
-
-    if (gSys.mInterpreter->AllocateTensors() != kTfLiteOk) {
-        cerr << "error: AllocateTensors()\n";
-        exit(1);
-    }
-
-    // load labels
-    if (tfl_label != "none") {
-        string   label;
-        ifstream lb_file(tfl_label);
-        if (lb_file.fail()) {
-            cerr << "error: Failed to open file\n";
-            exit(1);
-        }
-        while (getline(lb_file, label)) {
-            gSys.mLabel.emplace_back(label);
-        }
-        gSys.mNumClass = gSys.mLabel.size();
-    }
-    else {
-        gSys.mLabel.clear();
-        gSys.mNumClass = 0;
-    }
-
-    // REPL
-    for (;;) {
-        // receive command packet
-        string cmd_line;
-        ssize_t n = gSys.mRcv(cmd_line);
-        if (n <= 0) {
-            break;
-        }
-
-        // command branch
-        string result;
-
-        int cmd = cmd_line.front();
-        if (cmd < gMaxCmd) {
-            result = gCmdTbl[cmd](cmd_line);
-        }
-        else {
-            result = cmd_line;
-        }
-
-        // send the result in JSON string
-        n = gSys.mSnd(result);
-        if (n <= 0) {
-            break;
-        }
-    }
-}
-
-/***  Module Header  ******************************************************}}}*/
-/**
-* prit usage
-* @par DESCRIPTION
-*   print usage to terminal
-**/
-/**************************************************************************{{{*/
-void usage()
-{
-    cout
-      << "tfl_interp [opts] <model.tflite> <class.label>\n"
-      << "\toption:\n"
-      << "\t  -d <num> : diagnosis mode\n"
-      << "\t             1 = save the formed image\n"
-      << "\t             2 = save model's input/output tensors\n"
-      << "\t             4 = save result of the prediction\n";
-}
-
-/***  Module Header  ******************************************************}}}*/
-/**
-* tensor flow lite for Elixir/Erlang Port ext.
-* @par DESCRIPTION
-*   Elixir/Erlang Port extension (experimental)
-*
-* @return exit status
-**/
-/**************************************************************************{{{*/
-int
-main(int argc, char* argv[])
-{
-    int opt, longindex;
-    struct option longopts[] = {
-        { "tiny",     no_argument,       NULL, 't' },
-        { "debug",    required_argument, NULL, 'd' },
-        { "parallel", required_argument, NULL, 'j' },
-        { 0,          0,                 0,     0  },
-    };
-
-    for (;;) {
-        opt = getopt_long(argc, argv, "d:tj:", longopts, NULL);
-        if (opt == -1) {
-            break;
-        }
-        else switch (opt) {
-        case 't':
-            gSys.mTiny = true;
-            break;
-        case 'd':
-            gSys.mDiag = atoi(optarg);
-            break;
-        case 'j':
-            gSys.mNumThread = atoi(optarg);
-            break;
-        case '?':
-        case ':':
-            cerr << "error: unknown options\n\n";
-            usage();
-            return 1;
-        }
-    }
-    if ((argc - optind) < 2) {
-        // argument error
-        cerr << "error: expect <model.tflite>\n\n";
-        usage();
-        return 1;
-    }
-
-    // save exe infomations
-    gSys.mExe.assign(argv[0]);
-    gSys.mTflModel.assign(argv[optind]);
-    gSys.mTflLabel.assign(argv[optind+1]);
- 
-    // initialize i/o
-    cin.exceptions(ios_base::badbit|ios_base::failbit|ios_base::eofbit);
-    cout.exceptions(ios_base::badbit|ios_base::failbit|ios_base::eofbit);
-    
-#ifdef _WIN32
-	setmode(fileno(stdin),  O_BINARY);
-	setmode(fileno(stdout), O_BINARY);
-#endif
-	gSys.mRcv = rcv_packet_port;
-	gSys.mSnd = snd_packet_port;
-
-    // run interpreter
-    interp(gSys.mTflModel, gSys.mTflLabel);
-
-    return 0;
+    return std::string(otensor->data.raw, otensor->bytes);
 }
 
 /*** tfl_interp.cc ********************************************************}}}*/

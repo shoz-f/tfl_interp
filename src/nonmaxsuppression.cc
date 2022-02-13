@@ -1,6 +1,6 @@
 /***  File Header  ************************************************************/
 /**
-* tfl_nonmaxsuppression.cc
+* nonmaxsuppression.cc
 *
 * Elixir/Erlang Port ext. of tensor flow lite: post processing
 * @author	   Shozo Fukuda
@@ -10,10 +10,10 @@
 **/
 /**************************************************************************{{{*/
 
-#include <queue>
-using namespace std;
+#include "tiny_ml.h"
+#include "postprocess.h"
 
-#include "tfl_postprocess.h"
+#include <queue>
 
 /***  Class Header  *******************************************************}}}*/
 /**
@@ -39,10 +39,10 @@ public:
 public:
     // calc Intersection over Union
     float iou(const Box& x) const {
-        float x1 = max(mBBox[0], x.mBBox[0]);
-        float y1 = max(mBBox[1], x.mBBox[1]);
-        float x2 = min(mBBox[2], x.mBBox[2]);
-        float y2 = min(mBBox[3], x.mBBox[3]);
+        float x1 = std::max(mBBox[0], x.mBBox[0]);
+        float y1 = std::max(mBBox[1], x.mBBox[1]);
+        float x2 = std::min(mBBox[2], x.mBBox[2]);
+        float y2 = std::min(mBBox[3], x.mBBox[3]);
         
         if (x1 < x2 && y1 < y2) {
             float v_intersection = (x2 - x1)*(y2 - y1);
@@ -101,7 +101,7 @@ bool operator< (const Box& a, const Box& b) {
 * @retval json
 **/
 /**************************************************************************{{{*/
-string
+std::string
 non_max_suppression_multi_class(
 int           num_boxes,
 int           num_class,
@@ -112,7 +112,7 @@ float         score_threshold,
 float         sigma)
 {
     json res;
-    priority_queue<Box> candidates;
+    std::priority_queue<Box> candidates;
 
     // run nms over each classification class.
     for (int class_id = 0; class_id < num_class; class_id++) {
@@ -127,7 +127,7 @@ float         sigma)
         if (candidates.empty()) continue;
 
         // perform iou filtering
-        string class_name = gSys.label(class_id);
+        std::string class_name = gSys.label(class_id);
         do {
             Box selected = candidates.top();  candidates.pop();
 
@@ -164,8 +164,8 @@ float         sigma)
 * @retval json
 **/
 /**************************************************************************{{{*/
-string
-non_max_suppression_multi_class(const string& args)
+std::string
+non_max_suppression_multi_class(const std::string& args)
 {
     struct Prms {
         unsigned char cmd;
@@ -203,4 +203,4 @@ non_max_suppression_multi_class(const string& args)
 /**/
 }
 
-/*** tfl_nonmaxsuppression.cc *********************************************}}}*/
+/*** nonmaxsuppression.cc *************************************************}}}*/

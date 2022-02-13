@@ -273,10 +273,18 @@ defmodule TflInterp do
     * mod   - modules' names
     * index - index of input tensor in the model
     * bin   - input data - flat binary, cf. serialized tensor
+    * opts  - data conversion
   """
-  def set_input_tensor(mod, index, bin) do
+  def set_input_tensor(mod, index, bin, opts \\ []) do
+    dtype = case Keyword.get(opts, :dtype, "none") do
+      "none" -> 0
+      "<f4"  -> 1
+      "<f2"  -> 2
+    end
+    {lo, hi} = Keyword.get(opts, :range, {0.0, 1.0})
+
     cmd = 1
-    case GenServer.call(mod, <<cmd::8, index::8, bin::binary>>, @timeout) do
+    case GenServer.call(mod, <<cmd::8, index::8, dtype::8, 0::8, lo::little-float-32, hi::little-float-32, bin::binary>>, @timeout) do
       {:ok, result} ->  Poison.decode(result)
       any -> any
     end
@@ -333,6 +341,14 @@ defmodule TflInterp do
   def non_max_suppression_multi_class(mod, {num_boxes, num_class}, boxes, scores, iou_threshold \\ 0.5, score_threshold \\ 0.25, sigma \\ 0.0) do
     cmd = 4
     case GenServer.call(mod, <<cmd::8, @padding::8*3, num_boxes::little-integer-32, num_class::little-integer-32, iou_threshold::little-float-32, score_threshold::little-float-32, sigma::little-float-32>> <> boxes <> scores, @timeout) do
+      {:ok, result} -> Poison.decode(result)
+      any -> any
+    end
+  end
+  
+  def test(mod) do
+    cmd = 5
+    case GenServer.call(mod, <<cmd::8>>, @timeout) do
       {:ok, result} -> Poison.decode(result)
       any -> any
     end

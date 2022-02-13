@@ -99,9 +99,10 @@ endif()
 
 # main
 add_executable(tfl_interp
+  src/main.cc
   src/tfl_interp.cc
   src/io_port.cc
-  src/tfl_nonmaxsuppression.cc
+  src/nonmaxsuppression.cc
 )
 target_link_libraries(tfl_interp
   tensorflow-lite
