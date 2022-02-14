@@ -19,6 +19,7 @@
 using json = nlohmann::json;
 
 #include "tensorflow/lite/interpreter.h"
+#include "tensorflow/lite/model.h"
 
 /**************************************************************************}}}**
 * system information
@@ -32,6 +33,7 @@ struct SysInfo {
     int            mNumThread;  // number of thread
 
     std::unique_ptr<tflite::Interpreter> mInterpreter;
+    std::unique_ptr<tflite::FlatBufferModel> mModel;
 
     std::vector<std::string> mLabel;
     unsigned int mNumClass;
@@ -63,9 +65,9 @@ ssize_t snd_packet_port(std::string result);
 /**************************************************************************}}}**
 * service call functions
 ***************************************************************************{{{*/
-void init_interp(std::string& tfl_model);
+void init_interp(SysInfo& sys, std::string& model);
 
-typedef std::string (TMLFunc)(const std::string& args);
+typedef std::string (TMLFunc)(SysInfo& sys, const std::string& args);
 TMLFunc info;
 TMLFunc set_input_tensor;
 TMLFunc invoke;

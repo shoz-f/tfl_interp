@@ -56,7 +56,7 @@ const int gMaxCmd = sizeof(gCmdTbl)/sizeof(TMLFunc*);
 void
 interp(std::string& tfl_model, std::string& tfl_label)
 {
-#if 1
+#if 0
     // load tensor flow lite model
     std::unique_ptr<tflite::FlatBufferModel> model =
         tflite::FlatBufferModel::BuildFromFile(tfl_model.c_str());
@@ -71,7 +71,7 @@ interp(std::string& tfl_model, std::string& tfl_label)
         exit(1);
     }
 #else
-    init_interp(tfl_model);
+    init_interp(gSys, tfl_model);
 #endif
 
     // load labels
@@ -106,7 +106,7 @@ interp(std::string& tfl_model, std::string& tfl_label)
 
         int cmd = cmd_line.front();
         if (cmd < gMaxCmd) {
-            result = gCmdTbl[cmd](cmd_line);
+            result = gCmdTbl[cmd](gSys, cmd_line);
         }
         else {
             result = "unknown command";//cmd_line;

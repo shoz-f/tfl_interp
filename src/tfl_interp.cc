@@ -13,7 +13,6 @@
 #include "tiny_ml.h"
 
 #include "tensorflow/lite/kernels/register.h"
-#include "tensorflow/lite/model.h"
 
 #define TFLITE_EXPERIMENTAL 1
 
@@ -21,23 +20,22 @@
 /**
 * initialize interpreter
 * @par DESCRIPTION
-*   
 *
-* @retval 
+*
+* @retval
 **/
 /**************************************************************************{{{*/
-void init_interp(std::string& tfl_model)
+void init_interp(SysInfo& sys, std::string& tfl_model)
 {
     // load tensor flow lite model
-    std::unique_ptr<tflite::FlatBufferModel> model =
-        tflite::FlatBufferModel::BuildFromFile(tfl_model.c_str());
+    sys.mModel = tflite::FlatBufferModel::BuildFromFile(tfl_model.c_str());
 
     tflite::ops::builtin::BuiltinOpResolver resolver;
-    tflite::InterpreterBuilder builder(*model, resolver);
-    builder.SetNumThreads(gSys.mNumThread);
-    builder(&gSys.mInterpreter);
+    tflite::InterpreterBuilder builder(*sys.mModel, resolver);
+    builder.SetNumThreads(sys.mNumThread);
+    builder(&sys.mInterpreter);
 
-    if (gSys.mInterpreter->AllocateTensors() != kTfLiteOk) {
+    if (sys.mInterpreter->AllocateTensors() != kTfLiteOk) {
         std::cerr << "error: AllocateTensors()\n";
         exit(1);
     }
@@ -47,24 +45,24 @@ void init_interp(std::string& tfl_model)
 /**
 * query dimension of input tensor
 * @par DESCRIPTION
-*   
 *
-* @retval 
+*
+* @retval
 **/
 /**************************************************************************{{{*/
 std::string
-info(const std::string&)
+info(SysInfo& sys, const std::string&)
 {
     json res;
 
-    res["exe"  ]  = gSys.mExe;
-    res["model"]  = gSys.mModelPath;
-    res["label"]  = gSys.mLabelPath;
-    res["class"]  = gSys.mNumClass;
-    res["thread"] = gSys.mNumThread;
-    
-    for (int index = 0; index < gSys.mInterpreter->inputs().size(); index++) {
-        TfLiteTensor* itensor = gSys.mInterpreter->input_tensor(index);
+    res["exe"  ]  = sys.mExe;
+    res["model"]  = sys.mModelPath;
+    res["label"]  = sys.mLabelPath;
+    res["class"]  = sys.mNumClass;
+    res["thread"] = sys.mNumThread;
+
+    for (int index = 0; index < sys.mInterpreter->inputs().size(); index++) {
+        TfLiteTensor* itensor = sys.mInterpreter->input_tensor(index);
 
         json tf_lite_tensor;
         tf_lite_tensor["name"] = std::string(itensor->name);
@@ -76,8 +74,8 @@ info(const std::string&)
         res["inputs"].push_back(tf_lite_tensor);
     }
 
-    for (int index = 0; index < gSys.mInterpreter->outputs().size(); index++) {
-        TfLiteTensor* itensor = gSys.mInterpreter->output_tensor(index);
+    for (int index = 0; index < sys.mInterpreter->outputs().size(); index++) {
+        TfLiteTensor* itensor = sys.mInterpreter->output_tensor(index);
 
         json tf_lite_tensor;
         tf_lite_tensor["name"] = std::string(itensor->name);
@@ -90,9 +88,9 @@ info(const std::string&)
     }
 
 #if TFLITE_EXPERIMENTAL
-    int first_node_id = gSys.mInterpreter->execution_plan()[0];
-    const auto& first_node_reg = 
-        gSys.mInterpreter->node_and_registration(first_node_id)->second;
+    int first_node_id = sys.mInterpreter->execution_plan()[0];
+    const auto& first_node_reg =
+        sys.mInterpreter->node_and_registration(first_node_id)->second;
     res["XNNPack"] = (tflite::GetOpNameByRegistration(first_node_reg) == "DELEGATE TfLiteXNNPackDelegate");
 #endif
     return res.dump();
@@ -102,13 +100,13 @@ info(const std::string&)
 /**
 * query dimension of input tensor
 * @par DESCRIPTION
-*   
 *
-* @retval 
+*
+* @retval
 **/
 /**************************************************************************{{{*/
 std::string
-set_input_tensor(const std::string& args)
+set_input_tensor(SysInfo& sys, const std::string& args)
 {
     json res;
 
@@ -124,11 +122,11 @@ set_input_tensor(const std::string& args)
     const Prms*  prms = reinterpret_cast<const Prms*>(args.data());
     const size_t size = args.size() - sizeof(Prms);
 
-    if (prms->index >= gSys.mInterpreter->inputs().size()) {
+    if (prms->index >= sys.mInterpreter->inputs().size()) {
         res["status"] = -1;
         return res.dump();
     }
-    TfLiteTensor* itensor = gSys.mInterpreter->input_tensor(prms->index);
+    TfLiteTensor* itensor = sys.mInterpreter->input_tensor(prms->index);
 
     res["status"] = 0;
     switch (prms->dtype) {
@@ -174,17 +172,17 @@ set_input_tensor(const std::string& args)
 /**
 * query dimension of input tensor
 * @par DESCRIPTION
-*   
 *
-* @retval 
+*
+* @retval
 **/
 /**************************************************************************{{{*/
 std::string
-invoke(const std::string&)
+invoke(SysInfo& sys, const std::string&)
 {
     json res;
 
-    res["status"] = gSys.mInterpreter->Invoke();
+    res["status"] = sys.mInterpreter->Invoke();
     return res.dump();
 }
 
@@ -192,13 +190,13 @@ invoke(const std::string&)
 /**
 * query dimension of input tensor
 * @par DESCRIPTION
-*   
 *
-* @retval 
+*
+* @retval
 **/
 /**************************************************************************{{{*/
 std::string
-get_output_tensor(const std::string& args)
+get_output_tensor(SysInfo& sys, const std::string& args)
 {
     json res;
 
@@ -208,10 +206,10 @@ get_output_tensor(const std::string& args)
     } __attribute__((packed));
     const Prms*  prms = reinterpret_cast<const Prms*>(args.data());
 
-    if (prms->index >= gSys.mInterpreter->outputs().size()) {
+    if (prms->index >= sys.mInterpreter->outputs().size()) {
         return std::string("");
     }
-    TfLiteTensor* otensor = gSys.mInterpreter->output_tensor(prms->index);
+    TfLiteTensor* otensor = sys.mInterpreter->output_tensor(prms->index);
 
     return std::string(otensor->data.raw, otensor->bytes);
 }

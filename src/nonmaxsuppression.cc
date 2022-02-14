@@ -165,7 +165,7 @@ float         sigma)
 **/
 /**************************************************************************{{{*/
 std::string
-non_max_suppression_multi_class(const std::string& args)
+non_max_suppression_multi_class(SysInfo&, const std::string& args)
 {
     struct Prms {
         unsigned char cmd;
