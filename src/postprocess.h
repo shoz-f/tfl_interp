@@ -17,6 +17,6 @@
 TMLFunc non_max_suppression_multi_class;
 
 #define POST_PROCESS \
-    non_max_suppression_multi_class,
+    non_max_suppression_multi_class
 
 #endif /* _POSTPROCESS_H */

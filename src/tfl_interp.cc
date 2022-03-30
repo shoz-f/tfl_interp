@@ -10,6 +10,8 @@
 **/
 /**************************************************************************{{{*/
 
+#include <stdio.h>
+
 #include "tiny_ml.h"
 
 #include "tensorflow/lite/kernels/register.h"
@@ -51,7 +53,7 @@ void init_interp(SysInfo& sys, std::string& tfl_model)
 **/
 /**************************************************************************{{{*/
 std::string
-info(SysInfo& sys, const std::string&)
+info(SysInfo& sys, const void*)
 {
     json res;
 
@@ -105,66 +107,71 @@ info(SysInfo& sys, const std::string&)
 * @retval
 **/
 /**************************************************************************{{{*/
-std::string
-set_input_tensor(SysInfo& sys, const std::string& args)
+static int
+set_itensor(SysInfo& sys, const void* args)
 {
-    json res;
-
     struct Prms {
-        unsigned char cmd;
-        unsigned char index;
-        unsigned char dtype;
-        unsigned char _1;
-        float          min;
-        float          max;
-        uint8_t         data[0];
+        unsigned int size;
+        unsigned int index;
+        unsigned int dtype;
+        float         min;
+        float         max;
+        uint8_t        data[0];
     } __attribute__((packed));
-    const Prms*  prms = reinterpret_cast<const Prms*>(args.data());
-    const size_t size = args.size() - sizeof(Prms);
+    const Prms*  prms = reinterpret_cast<const Prms*>(args);
+    const size_t prms_size = sizeof(prms->size) + prms->size;
+    const size_t data_size = prms_size - sizeof(Prms);
 
     if (prms->index >= sys.mInterpreter->inputs().size()) {
-        res["status"] = -1;
-        return res.dump();
+        return -1;
     }
+
     TfLiteTensor* itensor = sys.mInterpreter->input_tensor(prms->index);
 
-    res["status"] = 0;
+
     switch (prms->dtype) {
     case 0:
-        if (size == itensor->bytes) {
-            memcpy(itensor->data.raw, prms->data, itensor->bytes);
-        }
-        else {
-            res["status"] = -2;
-        }
+		if (data_size != itensor->bytes) {
+			return -2;
+		}
+
+        memcpy(itensor->data.raw, prms->data, data_size);
         break;
 
     case 1:
-        if (size == itensor->bytes/sizeof(float)) {
-            float rang = (prms->max - prms->min)/255.0;
-            float base = prms->min;
+    	{
+			if (data_size != itensor->bytes/sizeof(float)) {
+				return -2;
+			}
 
-            float* dst = itensor->data.f;
-            const uint8_t* src = prms->data;
-            for (int i = 0; i < (itensor->bytes/sizeof(float)); i++) {
-                *dst = (rang * (*src)) - base;
-                dst++;
-                src++;
-            }
-        }
-        else {
-            res["status"] = -2;
+			double a = (prms->max - prms->min)/255.0;
+			double b = prms->min;
+	
+			float* dst = itensor->data.f;
+			const uint8_t* src = prms->data;
+			for (int i = 0; i < data_size; i++) {
+				*dst = a*(*src) + b;
+				dst++;
+				src++;
+			}
         }
         break;
 
-    case 2:
-        res["status"] = -3;
-        break;
     default:
-        res["status"] = -3;
-        break;
+    	return -3;
     }
 
+    return prms_size;
+}
+
+std::string
+set_input_tensor(SysInfo& sys, const void* args)
+{
+    json res;
+
+    int status = set_itensor(sys, args);
+    res["status"] = (status >= 0) ? 0 : status;
+    
     return res.dump();
 }
 
@@ -178,7 +185,7 @@ set_input_tensor(SysInfo& sys, const std::string& args)
 **/
 /**************************************************************************{{{*/
 std::string
-invoke(SysInfo& sys, const std::string&)
+invoke(SysInfo& sys, const void*)
 {
     json res;
 
@@ -196,15 +203,14 @@ invoke(SysInfo& sys, const std::string&)
 **/
 /**************************************************************************{{{*/
 std::string
-get_output_tensor(SysInfo& sys, const std::string& args)
+get_output_tensor(SysInfo& sys, const void* args)
 {
     json res;
 
     struct Prms {
-        unsigned char cmd;
-        unsigned char index;
+        unsigned int index;
     } __attribute__((packed));
-    const Prms*  prms = reinterpret_cast<const Prms*>(args.data());
+    const Prms*  prms = reinterpret_cast<const Prms*>(args);
 
     if (prms->index >= sys.mInterpreter->outputs().size()) {
         return std::string("");
@@ -212,6 +218,60 @@ get_output_tensor(SysInfo& sys, const std::string& args)
     TfLiteTensor* otensor = sys.mInterpreter->output_tensor(prms->index);
 
     return std::string(otensor->data.raw, otensor->bytes);
+}
+
+/***  Module Header  ******************************************************}}}*/
+/**
+* query dimension of input tensor
+* @par DESCRIPTION
+*
+*
+* @retval
+**/
+/**************************************************************************{{{*/
+std::string
+run(SysInfo& sys, const void* args)
+{
+    // set input tensors
+    struct Prms {
+        unsigned int  count;
+        unsigned char data[0];
+    } __attribute__((packed));
+    const Prms* prms = reinterpret_cast<const Prms*>(args);
+
+    const unsigned char* ptr = prms->data;
+    for (int i = 0; i < prms->count; i++) {
+    	int next = set_itensor(sys, ptr);
+    	if (next < 0) {
+    		// error about input tensors: error_code {-1..-3}
+    		return std::string(reinterpret_cast<char*>(&next), sizeof(next));
+    	}
+        
+        ptr += next;
+    }
+    
+    // invoke
+    int status = sys.mInterpreter->Invoke();
+    if (status != kTfLiteOk) {
+		// error about invoke: error_code {-11..}
+		status = -(10 + status);
+		return std::string(reinterpret_cast<char*>(&status), sizeof(status));
+    }
+
+    int count = sys.mInterpreter->outputs().size();
+    std::string output(reinterpret_cast<char*>(&count), sizeof(count));
+
+   	// get output tensors  <<count::little-integer-32, size::little-integer-32, bin::binary-size(size), ..>>
+    int index = count - 1;
+    while (index >= 0) {
+        TfLiteTensor* otensor = sys.mInterpreter->output_tensor(index);
+        int size = otensor->bytes;
+        output += std::string(reinterpret_cast<char*>(&size), sizeof(size))
+               +  std::string(otensor->data.raw, otensor->bytes);
+        index--;
+    }
+
+    return output;
 }
 
 /*** tfl_interp.cc ********************************************************}}}*/

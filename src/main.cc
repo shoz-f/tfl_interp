@@ -37,6 +37,7 @@ TMLFunc* gCmdTbl[] = {
     set_input_tensor,
     invoke,
     get_output_tensor,
+    run,
     
     POST_PROCESS
 };
@@ -102,11 +103,16 @@ interp(std::string& tfl_model, std::string& tfl_label)
         }
 
         // command branch
+        struct Cmd {
+            unsigned int cmd;
+            uint8_t        args[0];
+        } __attribute__((packed));
+        const Cmd& call = *reinterpret_cast<const Cmd*>(cmd_line.data());
+
         std::string result;
 
-        int cmd = cmd_line.front();
-        if (cmd < gMaxCmd) {
-            result = gCmdTbl[cmd](gSys, cmd_line);
+        if (call.cmd < gMaxCmd) {
+            result = gCmdTbl[call.cmd](gSys, call.args);
         }
         else {
             result = "unknown command";//cmd_line;
@@ -162,6 +168,7 @@ main(int argc, char* argv[])
     gSys.mTiny      = false;
     gSys.mDiag      = 0;
     gSys.mNumThread = 4;
+    gSys.reset_lap();
 
     for (;;) {
         opt = getopt_long(argc, argv, "d:tj:", longopts, NULL);

@@ -222,6 +222,10 @@ defmodule TflInterp do
 
         {:ok, %{port: port}}
       end
+      
+      def session() do
+        %TflInterp{module: __MODULE__}
+      end
 
       def handle_call(cmd_line, _from, state) do
         Port.command(state.port, cmd_line)
@@ -239,6 +243,8 @@ defmodule TflInterp do
     end
   end
 
+  defstruct module: nil, input: [], output: []
+
   @doc """
   Get the propaty of the tflite model.
 
@@ -248,7 +254,7 @@ defmodule TflInterp do
   """
   def info(mod) do
     cmd = 0
-    case GenServer.call(mod, <<cmd::8>>, @timeout) do
+    case GenServer.call(mod, <<cmd::little-integer-32>>, @timeout) do
       {:ok, result} ->  Poison.decode(result)
       any -> any
     end
@@ -275,20 +281,32 @@ defmodule TflInterp do
     * bin   - input data - flat binary, cf. serialized tensor
     * opts  - data conversion
   """
-  def set_input_tensor(mod, index, bin, opts \\ []) do
+  def set_input_tensor(mod, index, bin, opts \\ [])
+
+  def set_input_tensor(mod, index, bin, opts) when is_atom(mod) do
+    cmd = 1
+    case GenServer.call(mod, <<cmd::little-integer-32>> <> input_tensor(index, bin, opts), @timeout) do
+      {:ok, result} ->  Poison.decode(result)
+      any -> any
+    end
+    mod
+  end
+  
+  def set_input_tensor(%TflInterp{input: input}=session, index, bin, opts) do                                                                       
+    %TflInterp{session | input: [input_tensor(index, bin, opts) | input]}
+  end
+  
+  defp input_tensor(index, bin, opts) do
     dtype = case Keyword.get(opts, :dtype, "none") do
       "none" -> 0
       "<f4"  -> 1
       "<f2"  -> 2
     end
     {lo, hi} = Keyword.get(opts, :range, {0.0, 1.0})
-
-    cmd = 1
-    case GenServer.call(mod, <<cmd::8, index::8, dtype::8, 0::8, lo::little-float-32, hi::little-float-32, bin::binary>>, @timeout) do
-      {:ok, result} ->  Poison.decode(result)
-      any -> any
-    end
-    mod
+    
+    size = 16 + byte_size(bin)
+    
+    <<size::little-integer-32, index::little-integer-32, dtype::little-integer-32, lo::little-float-32, hi::little-float-32, bin::binary>>
   end
 
   @doc """
@@ -298,9 +316,9 @@ defmodule TflInterp do
 
     * mod - modules' names
   """
-  def invoke(mod) do
+  def invoke(mod) when is_atom(mod) do
     cmd = 2
-    case GenServer.call(mod, <<cmd::8>>, @timeout) do
+    case GenServer.call(mod, <<cmd::little-integer-32>>, @timeout) do
       {:ok, result} -> Poison.decode(result)
       any -> any
     end
@@ -315,10 +333,31 @@ defmodule TflInterp do
     * mod   - modules' names
     * index - index of output tensor in the model
   """
-  def get_output_tensor(mod, index) do
+  def get_output_tensor(mod, index) when is_atom(mod) do
     cmd = 3
-    case GenServer.call(mod, <<cmd::8, index::8>>, @timeout) do
+    case GenServer.call(mod, <<cmd::little-integer-32, index::little-integer-32>>, @timeout) do
       {:ok, result} -> result
+      any -> any
+    end
+  end
+  
+  def get_output_tensor(%TflInterp{output: output}, index) do
+    Enum.at(output, index)
+  end
+
+  @doc """
+  """
+  def run(%TflInterp{module: mod, input: input}=session) do
+    cmd   = 4
+    count = Enum.count(input)
+    data  = Enum.reduce(input, <<>>, fn x,acc -> acc <> x end)
+    case GenServer.call(mod, <<cmd::little-integer-32, count::little-integer-32>> <> data, @timeout) do
+      {:ok, <<count::little-integer-32, results::binary>>} ->
+      	  if count > 0 do
+      	  	  %TflInterp{session | output: for <<size::little-integer-32, tensor::binary-size(size) <- results>> do tensor end}
+      	  else
+      	  	  "error: %{count}"
+      	  end
       any -> any
     end
   end
@@ -339,16 +378,9 @@ defmodule TflInterp do
   """
 
   def non_max_suppression_multi_class(mod, {num_boxes, num_class}, boxes, scores, iou_threshold \\ 0.5, score_threshold \\ 0.25, sigma \\ 0.0) do
-    cmd = 4
-    case GenServer.call(mod, <<cmd::8, @padding::8*3, num_boxes::little-integer-32, num_class::little-integer-32, iou_threshold::little-float-32, score_threshold::little-float-32, sigma::little-float-32>> <> boxes <> scores, @timeout) do
-      {:ok, result} -> Poison.decode(result)
-      any -> any
-    end
-  end
-  
-  def test(mod) do
     cmd = 5
-    case GenServer.call(mod, <<cmd::8>>, @timeout) do
+    case GenServer.call(mod, <<cmd::little-integer-32, @padding::8*3, num_boxes::little-integer-32, num_class::little-integer-32, iou_threshold::little-float-32, score_threshold::little-float-32, sigma::little-float-32>> <> boxes <> scores, @timeout) do
+      {:ok, nil} -> :notfind
       {:ok, result} -> Poison.decode(result)
       any -> any
     end

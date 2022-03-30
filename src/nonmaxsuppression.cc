@@ -103,8 +103,8 @@ bool operator< (const Box& a, const Box& b) {
 /**************************************************************************{{{*/
 std::string
 non_max_suppression_multi_class(
-int           num_boxes,
-int           num_class,
+unsigned int num_boxes,
+unsigned int num_class,
 const float* boxes,
 const float* scores,
 float         iou_threshold,
@@ -165,19 +165,17 @@ float         sigma)
 **/
 /**************************************************************************{{{*/
 std::string
-non_max_suppression_multi_class(SysInfo&, const std::string& args)
+non_max_suppression_multi_class(SysInfo&, const void* args)
 {
     struct Prms {
-        unsigned char cmd;
-        unsigned char _1[3];
-        int             num_boxes;
-        int             num_class;
-        float          iou_threshold;
-        float          score_threshold;
-        float          sigma;
-        float          table[0];
+        unsigned int num_boxes;
+        unsigned int num_class;
+        float         iou_threshold;
+        float         score_threshold;
+        float         sigma;
+        float         table[0];
     } __attribute__((packed));
-    const Prms*  prms = reinterpret_cast<const Prms*>(args.data());
+    const Prms*  prms = reinterpret_cast<const Prms*>(args);
 /*+DEBUG:shoz:22/02/06:
     json res;
     res["num_boxes"]       = prms->num_boxes;

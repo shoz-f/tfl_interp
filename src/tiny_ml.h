@@ -15,6 +15,9 @@
 #include <string>
 #include <vector>
 
+#include <chrono>
+namespace chrono = std::chrono;
+
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
@@ -24,6 +27,8 @@ using json = nlohmann::json;
 /**************************************************************************}}}**
 * system information
 ***************************************************************************{{{*/
+#define NUM_LAP	10
+
 struct SysInfo {
     std::string     mExe;       // path of this executable
     std::string     mModelPath; // path of Tflite Model
@@ -38,12 +43,8 @@ struct SysInfo {
     std::vector<std::string> mLabel;
     unsigned int mNumClass;
 
-/*
-    steady_clock::time_point mWatchStart;
-    milliseconds    mLap1;      //
-    milliseconds    mLap2;      //
-    milliseconds    mLap3;      //
-*/
+	chrono::steady_clock::time_point mWatchStart;
+	chrono::milliseconds mLap[NUM_LAP];
 
     // i/o method
     ssize_t (*mRcv)(std::string& cmd_line);
@@ -51,6 +52,10 @@ struct SysInfo {
 
     std::string label(int id) {
         return (id < mLabel.size()) ? mLabel[id] : std::to_string(id);
+    }
+    
+    void reset_lap() {
+    	for (int i = 0; i < NUM_LAP; i++) { mLap[i] = chrono::milliseconds(0); }
     }
 };
 
@@ -67,10 +72,11 @@ ssize_t snd_packet_port(std::string result);
 ***************************************************************************{{{*/
 void init_interp(SysInfo& sys, std::string& model);
 
-typedef std::string (TMLFunc)(SysInfo& sys, const std::string& args);
+typedef std::string (TMLFunc)(SysInfo& sys, const void* args);
 TMLFunc info;
 TMLFunc set_input_tensor;
 TMLFunc invoke;
 TMLFunc get_output_tensor;
+TMLFunc run;
 
 #endif /* _TINY_ML_H */
