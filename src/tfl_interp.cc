@@ -258,17 +258,15 @@ run(SysInfo& sys, const void* args)
 		return std::string(reinterpret_cast<char*>(&status), sizeof(status));
     }
 
+   	// get output tensors  <<count::little-integer-32, size::little-integer-32, bin::binary-size(size), ..>>
     int count = sys.mInterpreter->outputs().size();
     std::string output(reinterpret_cast<char*>(&count), sizeof(count));
 
-   	// get output tensors  <<count::little-integer-32, size::little-integer-32, bin::binary-size(size), ..>>
-    int index = count - 1;
-    while (index >= 0) {
+   	for (int index = 0; index < count; index++) {
         TfLiteTensor* otensor = sys.mInterpreter->output_tensor(index);
         int size = otensor->bytes;
         output += std::string(reinterpret_cast<char*>(&size), sizeof(size))
                +  std::string(otensor->data.raw, otensor->bytes);
-        index--;
     }
 
     return output;
