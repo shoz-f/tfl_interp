@@ -43,6 +43,7 @@ struct SysInfo {
     std::vector<std::string> mLabel;
     unsigned int mNumClass;
 
+    int mUsedLap;
 	chrono::steady_clock::time_point mWatchStart;
 	chrono::milliseconds mLap[NUM_LAP];
 
@@ -56,6 +57,17 @@ struct SysInfo {
     
     void reset_lap() {
     	for (int i = 0; i < NUM_LAP; i++) { mLap[i] = chrono::milliseconds(0); }
+    	mUsedLap = 0;
+    }
+    void start_watch() {
+    	reset_lap();
+    	mWatchStart = chrono::steady_clock::now();
+    }
+    void lap() {
+    	chrono::steady_clock::time_point now = chrono::steady_clock::now();
+    	mLap[mUsedLap] = chrono::duration_cast<chrono::milliseconds>(now - mWatchStart);
+    	mUsedLap++;
+    	mWatchStart = now;
     }
 };
 

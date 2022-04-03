@@ -95,12 +95,17 @@ info(SysInfo& sys, const void*)
         sys.mInterpreter->node_and_registration(first_node_id)->second;
     res["XNNPack"] = (tflite::GetOpNameByRegistration(first_node_reg) == "DELEGATE TfLiteXNNPackDelegate");
 #endif
+
+	for (int index = 0; index < sys.mUsedLap; index++) {
+		res["times"].push_back(sys.mLap[index].count());
+	}
+
     return res.dump();
 }
 
 /***  Module Header  ******************************************************}}}*/
 /**
-* query dimension of input tensor
+* set input tensor
 * @par DESCRIPTION
 *
 *
@@ -169,15 +174,19 @@ set_input_tensor(SysInfo& sys, const void* args)
 {
     json res;
 
+    sys.start_watch();
+
     int status = set_itensor(sys, args);
     res["status"] = (status >= 0) ? 0 : status;
-    
+
+    sys.lap();
+
     return res.dump();
 }
 
 /***  Module Header  ******************************************************}}}*/
 /**
-* query dimension of input tensor
+* execute inference
 * @par DESCRIPTION
 *
 *
@@ -189,13 +198,18 @@ invoke(SysInfo& sys, const void*)
 {
     json res;
 
+    sys.start_watch();
+
     res["status"] = sys.mInterpreter->Invoke();
+    
+    sys.lap();
+
     return res.dump();
 }
 
 /***  Module Header  ******************************************************}}}*/
 /**
-* query dimension of input tensor
+* get result tensor
 * @par DESCRIPTION
 *
 *
@@ -205,7 +219,7 @@ invoke(SysInfo& sys, const void*)
 std::string
 get_output_tensor(SysInfo& sys, const void* args)
 {
-    json res;
+	std::string res;
 
     struct Prms {
         unsigned int index;
@@ -215,14 +229,21 @@ get_output_tensor(SysInfo& sys, const void* args)
     if (prms->index >= sys.mInterpreter->outputs().size()) {
         return std::string("");
     }
+
+    sys.start_watch();
+
     TfLiteTensor* otensor = sys.mInterpreter->output_tensor(prms->index);
 
-    return std::string(otensor->data.raw, otensor->bytes);
+    res.assign(otensor->data.raw, otensor->bytes);
+
+    sys.lap();
+
+    return res;
 }
 
 /***  Module Header  ******************************************************}}}*/
 /**
-* query dimension of input tensor
+* execute inference in session mode
 * @par DESCRIPTION
 *
 *
@@ -239,6 +260,8 @@ run(SysInfo& sys, const void* args)
     } __attribute__((packed));
     const Prms* prms = reinterpret_cast<const Prms*>(args);
 
+    sys.start_watch();
+    
     const unsigned char* ptr = prms->data;
     for (int i = 0; i < prms->count; i++) {
     	int next = set_itensor(sys, ptr);
@@ -250,6 +273,8 @@ run(SysInfo& sys, const void* args)
         ptr += next;
     }
     
+    sys.lap();
+
     // invoke
     int status = sys.mInterpreter->Invoke();
     if (status != kTfLiteOk) {
@@ -257,6 +282,8 @@ run(SysInfo& sys, const void* args)
 		status = -(10 + status);
 		return std::string(reinterpret_cast<char*>(&status), sizeof(status));
     }
+
+    sys.lap();
 
    	// get output tensors  <<count::little-integer-32, size::little-integer-32, bin::binary-size(size), ..>>
     int count = sys.mInterpreter->outputs().size();
@@ -268,6 +295,8 @@ run(SysInfo& sys, const void* args)
         output += std::string(reinterpret_cast<char*>(&size), sizeof(size))
                +  std::string(otensor->data.raw, otensor->bytes);
     }
+
+    sys.lap();
 
     return output;
 }
