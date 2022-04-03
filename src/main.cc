@@ -57,23 +57,7 @@ const int gMaxCmd = sizeof(gCmdTbl)/sizeof(TMLFunc*);
 void
 interp(std::string& tfl_model, std::string& tfl_label)
 {
-#if 0
-    // load tensor flow lite model
-    std::unique_ptr<tflite::FlatBufferModel> model =
-        tflite::FlatBufferModel::BuildFromFile(tfl_model.c_str());
-
-    tflite::ops::builtin::BuiltinOpResolver resolver;
-    tflite::InterpreterBuilder builder(*model, resolver);
-    builder.SetNumThreads(gSys.mNumThread);
-    builder(&gSys.mInterpreter);
-
-    if (gSys.mInterpreter->AllocateTensors() != kTfLiteOk) {
-        std::cerr << "error: AllocateTensors()\n";
-        exit(1);
-    }
-#else
     init_interp(gSys, tfl_model);
-#endif
 
     // load labels
     if (tfl_label != "none") {
