@@ -11,10 +11,14 @@ defmodule TflInterp.MixProject do
       description: description(),
       package: package(),
       deps: deps(),
-      name: "tfl_interp",
-      source_url: "https://github.com/shoz-f/tfl_interp.git",
 
-      cmake: cmake()
+      cmake: cmake(),
+      
+      # Docs
+      # name: "tfl_interp",
+      source_url: "https://github.com/shoz-f/tfl_interp.git",
+      
+      docs: docs()
     ]
   end
 
@@ -68,6 +72,20 @@ defmodule TflInterp.MixProject do
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => "https://github.com/shoz-f/tfl_interp.git"},
       files: ~w(lib mix.exs README* CHANGELOG* LICENSE* CMakeLists.txt msys2.* *.cmake src)
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      extras: [
+        "README.md",
+#        "LICENSE",
+        "CHANGELOG.md"
+      ],
+#      source_ref: "v#{@version}",
+#      source_url: @source_url,
+#      skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
     ]
   end
 end
