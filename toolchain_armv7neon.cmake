@@ -12,7 +12,7 @@ if(NOT EXISTS ${CMAKE_SOURCE_DIR}/toolchains/${ARMV7NEON})
 endif()
 
 set(ARMCC_PREFIX ${CMAKE_SOURCE_DIR}/toolchains/${ARMV7NEON}/bin/arm-linux-gnueabihf-)
-set(ARMCC_FLAGS "-march=armv7-a -mfpu=neon-vfpv4 -funsafe-math-optimizations")
+set(ARMCC_FLAGS "-march=armv7-a -mfpu=neon-vfpv4 -funsafe-math-optimizations -mfp16-format=ieee")
 set(CMAKE_C_COMPILER ${ARMCC_PREFIX}gcc)
 set(CMAKE_CXX_COMPILER ${ARMCC_PREFIX}g++)
 set(CMAKE_C_FLAGS ${ARMCC_FLAGS})
