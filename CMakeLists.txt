@@ -51,7 +51,7 @@ if(NOT EXISTS ${CMAKE_SOURCE_DIR}/3rd_party/tensorflow_src)
 message("** Download Tensorflow lite etc.")
 FetchContent_Declare(tensorflow
   GIT_REPOSITORY https://github.com/tensorflow/tensorflow.git
-  GIT_TAG        v2.7.0
+  GIT_TAG        v2.8.0
   GIT_PROGRESS   TRUE
   SOURCE_DIR "${CMAKE_SOURCE_DIR}/3rd_party/tensorflow_src"
   SOURCE_SUBDIR tensorflow/lite
