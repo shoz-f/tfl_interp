@@ -96,9 +96,11 @@ info(SysInfo& sys, const void*)
     res["XNNPack"] = (tflite::GetOpNameByRegistration(first_node_reg) == "DELEGATE TfLiteXNNPackDelegate");
 #endif
 
-	for (int index = 0; index < sys.mUsedLap; index++) {
-		res["times"].push_back(sys.mLap[index].count());
-	}
+    json lap_time;
+    lap_time["input"]  = sys.mLap[0].count();
+    lap_time["exec"]   = sys.mLap[1].count();
+    lap_time["output"] = sys.mLap[2].count();
+    res["times"] = lap_time;
 
     return res.dump();
 }
@@ -179,7 +181,7 @@ set_input_tensor(SysInfo& sys, const void* args)
     int status = set_itensor(sys, args);
     res["status"] = (status >= 0) ? 0 : status;
 
-    sys.lap();
+    sys.LAP_INPUT();
 
     return res.dump();
 }
@@ -202,7 +204,7 @@ invoke(SysInfo& sys, const void*)
 
     res["status"] = sys.mInterpreter->Invoke();
     
-    sys.lap();
+    sys.LAP_EXEC();
 
     return res.dump();
 }
@@ -236,7 +238,7 @@ get_output_tensor(SysInfo& sys, const void* args)
 
     res.assign(otensor->data.raw, otensor->bytes);
 
-    sys.lap();
+    sys.LAP_OUTPUT();
 
     return res;
 }
@@ -273,7 +275,7 @@ run(SysInfo& sys, const void* args)
         ptr += next;
     }
     
-    sys.lap();
+    sys.LAP_INPUT();
 
     // invoke
     int status = sys.mInterpreter->Invoke();
@@ -283,7 +285,7 @@ run(SysInfo& sys, const void* args)
 		return std::string(reinterpret_cast<char*>(&status), sizeof(status));
     }
 
-    sys.lap();
+    sys.LAP_EXEC();
 
    	// get output tensors  <<count::little-integer-32, size::little-integer-32, bin::binary-size(size), ..>>
     int count = sys.mInterpreter->outputs().size();
@@ -296,7 +298,7 @@ run(SysInfo& sys, const void* args)
                +  std::string(otensor->data.raw, otensor->bytes);
     }
 
-    sys.lap();
+    sys.LAP_OUTPUT();
 
     return output;
 }
