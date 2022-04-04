@@ -9,4 +9,19 @@
 + #include <limits>
   
   #include "tensorflow/lite/simple_memory_arena.h"
-  
+
+*** "build/tensorflow_src/tensorflow/core/lib/random/random_distributions_utils.h.org"	Mon Nov 29 20:58:10 2021
+--- "build/tensorflow_src/tensorflow/core/lib/random/random_distributions_utils.h"	Mon Nov 29 20:58:48 2021
+***************
+*** 75,80 ****
+--- 75,83 ----
+    if (u1 < epsilon) {
+      u1 = epsilon;
+    }
++ #ifndef M_PI
++ #define M_PI 3.14159265358979323846
++ #endif
+    const float v1 = 2.0f * M_PI * Uint32ToFloat(x1);
+    const float u2 = sqrt(-2.0f * log(u1));
+  #if !defined(__linux__)
+ 

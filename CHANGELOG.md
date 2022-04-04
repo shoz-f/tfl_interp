@@ -1,29 +1,36 @@
-# Release 0.1.3(Jan 30 2022)
+# Changelog
 
-## Breaking Changes
+## Release 0.1.5()
 
-* change installation methods. see README.md for detail.
+  * Major Features and Improvements
+    * add session mode.
+    * add processing time measurement function.
+    * update Tensorflow to 2.8.0.
 
-## Major Features and Improvements
+## Release 0.1.4(Feb 6 2022)
 
-* move the directory to download Tensorflow to "3rd_party".
+  * Bug Fixes and Other Changes
+    * adjust word alignment of NMS parameter to ARMs.
 
-* supported Nerves ARMv6, ARMv7NEON and AArch64(not yet tested).
+## Release 0.1.3(Jan 30 2022)
 
-## Bug Fixes and Other Changes
+  * Breaking Changes
+    * change installation methods. see README.md for detail.
 
-* corrected CMakeLists scripts for MSYS2/MinGW64. 
+  * Major Features and Improvements
+    * move the directory to download Tensorflow to "3rd_party".
+    * supported Nerves ARMv6, ARMv7NEON and AArch64(not yet tested).
 
-* revised demo_mnist to fit cimg_ex 0.1.8.
+  * Bug Fixes and Other Changes
+    * corrected CMakeLists scripts for MSYS2/MinGW64. 
+    * revised demo_mnist to fit cimg_ex 0.1.8.
 
-# Release 0.1.2(Jan 17 2022)
+## Release 0.1.2(Jan 17 2022)
 
-## Breaking Changes
+  * Breaking Changes
 
-## Major Features and Improvements
+  * Major Features and Improvements
+    * remove C++ code that depend on C++20 features: src/tfl_interp.cc.
+    * limit dependency of mix_cmake to `dev`.
 
-* remove C++ code that depend on C++20 features: src/tfl_interp.cc.
-
-* limit dependency of mix_cmake to `dev`.
-
-## Bug Fixes and Other Changes
+  * Bug Fixes and Other Changes
