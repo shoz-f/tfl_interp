@@ -14,6 +14,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include <chrono>
 namespace chrono = std::chrono;
@@ -21,8 +22,38 @@ namespace chrono = std::chrono;
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
-#include "tensorflow/lite/interpreter.h"
-#include "tensorflow/lite/model.h"
+/***  Class Header  *******************************************************}}}*/
+/**
+* Abstruct Tiny ML Interpreter
+* @par DESCRIPTION
+*   Interface of Tiny ML Interpreter
+*
+**/
+/**************************************************************************{{{*/
+class TinyMLInterp{
+//LIFECYCLE:
+public:
+    TinyMLInterp() {}
+    virtual ~TinyMLInterp() {}
+
+//ACTION:
+public:
+    virtual void info(json& res) = 0;
+    virtual int set_input_tensor(unsigned int index, const uint8_t* data, int size) = 0;
+    virtual int set_input_tensor(unsigned int index, const uint8_t* data, int size, std::function<float(uint8_t)> conv) = 0;
+    virtual bool invoke() = 0;
+    virtual std::string get_output_tensor(unsigned int index) = 0;
+
+//INQUIRY:
+public:
+    size_t InputCount()  { return mInputCount;  }
+    size_t OutputCount() { return mOutputCount; }
+
+//ATTRIBUTE:
+protected:
+    size_t mInputCount;
+    size_t mOutputCount;
+};
 
 /**************************************************************************}}}**
 * system information
@@ -33,27 +64,26 @@ struct SysInfo {
     std::string     mExe;       // path of this executable
     std::string     mModelPath; // path of Tflite Model
     std::string     mLabelPath; // path of Class Labels
-    bool           mTiny;       // Yolo V3 tiny model
     unsigned long mDiag;       // diagnosis mode
     int            mNumThread;  // number of thread
 
-    std::unique_ptr<tflite::Interpreter> mInterpreter;
-    std::unique_ptr<tflite::FlatBufferModel> mModel;
+    TinyMLInterp* mInterp{nullptr};
 
     std::vector<std::string> mLabel;
-    unsigned int mNumClass;
-
-	chrono::steady_clock::time_point mWatchStart;
-	chrono::milliseconds mLap[NUM_LAP];
+    size_t mNumClass;
 
     // i/o method
-    ssize_t (*mRcv)(std::string& cmd_line);
-    ssize_t (*mSnd)(std::string result);
+    int (*mRcv)(std::string& cmd_line);
+    int (*mSnd)(std::string result);
 
     std::string label(int id) {
         return (id < mLabel.size()) ? mLabel[id] : std::to_string(id);
     }
-    
+
+    // stop watch
+	chrono::steady_clock::time_point mWatchStart;
+	chrono::milliseconds mLap[NUM_LAP];
+
     void reset_lap() {
     	for (int i = 0; i < NUM_LAP; i++) { mLap[i] = chrono::milliseconds(0); }
     }
@@ -77,19 +107,13 @@ extern SysInfo gSys;
 /**************************************************************************}}}**
 * i/o functions
 ***************************************************************************{{{*/
-ssize_t rcv_packet_port(std::string& cmd_line);
-ssize_t snd_packet_port(std::string result);
+int rcv_packet_port(std::string& cmd_line);
+int snd_packet_port(std::string result);
 
 /**************************************************************************}}}**
 * service call functions
 ***************************************************************************{{{*/
+void interp(std::string& model, std::string& labels);
 void init_interp(SysInfo& sys, std::string& model);
-
-typedef std::string (TMLFunc)(SysInfo& sys, const void* args);
-TMLFunc info;
-TMLFunc set_input_tensor;
-TMLFunc invoke;
-TMLFunc get_output_tensor;
-TMLFunc run;
 
 #endif /* _TINY_ML_H */

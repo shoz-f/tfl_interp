@@ -29,87 +29,6 @@
 /**************************************************************************{{{*/
 SysInfo gSys;
 
-/**************************************************************************}}}**
-* command dispatch table
-***************************************************************************{{{*/
-TMLFunc* gCmdTbl[] = {
-    info,
-    set_input_tensor,
-    invoke,
-    get_output_tensor,
-    run,
-    
-    POST_PROCESS
-};
-
-const int gMaxCmd = sizeof(gCmdTbl)/sizeof(TMLFunc*);
-
-/***  Module Header  ******************************************************}}}*/
-/**
-* tensor flow lite interpreter
-* @par DESCRIPTION
-*   
-**/
-/**************************************************************************{{{*/
-#include "tensorflow/lite/kernels/register.h"
-#include "tensorflow/lite/model.h"
-
-void
-interp(std::string& tfl_model, std::string& tfl_label)
-{
-    init_interp(gSys, tfl_model);
-
-    // load labels
-    if (tfl_label != "none") {
-        std::string   label;
-        std::ifstream lb_file(tfl_label);
-        if (lb_file.fail()) {
-            std::cerr << "error: Failed to open file\n";
-            exit(1);
-        }
-        while (getline(lb_file, label)) {
-            gSys.mLabel.emplace_back(label);
-        }
-        gSys.mNumClass = gSys.mLabel.size();
-    }
-    else {
-        gSys.mLabel.clear();
-        gSys.mNumClass = 0;
-    }
-
-    // REPL
-    for (;;) {
-        // receive command packet
-        std::string cmd_line;
-        ssize_t n = gSys.mRcv(cmd_line);
-        if (n <= 0) {
-            break;
-        }
-
-        // command branch
-        struct Cmd {
-            unsigned int cmd;
-            uint8_t        args[0];
-        } __attribute__((packed));
-        const Cmd& call = *reinterpret_cast<const Cmd*>(cmd_line.data());
-
-        std::string result;
-
-        if (call.cmd < gMaxCmd) {
-            result = gCmdTbl[call.cmd](gSys, call.args);
-        }
-        else {
-            result = "unknown command";//cmd_line;
-        }
-
-        // send the result in JSON string
-        n = gSys.mSnd(result);
-        if (n <= 0) {
-            break;
-        }
-    }
-}
-
 /***  Module Header  ******************************************************}}}*/
 /**
 * prit usage
@@ -142,29 +61,23 @@ main(int argc, char* argv[])
 {
     int opt, longindex;
     const struct option longopts[] = {
-        { "tiny",     no_argument,       NULL, 't' },
         { "debug",    required_argument, NULL, 'd' },
         { "parallel", required_argument, NULL, 'j' },
-        { 0,          0,                 0,     0  },
+		{0,0,0,0}
     };
 
     // initialize system environment
-    gSys.mTiny      = false;
     gSys.mDiag      = 0;
     gSys.mNumThread = 4;
     gSys.reset_lap();
 
     for (;;) {
-        opt = getopt_long(argc, argv, "d:tj:", longopts, NULL);
+        opt = getopt_long(argc, argv, "d:j:", longopts, NULL);
         if (opt == -1) {
             break;
         }
         else switch (opt) {
-        case 't':
-            gSys.mTiny = true;
-            break;
         case 'd':
-            gSys.mDiag = atoi(optarg);
             break;
         case 'j':
             gSys.mNumThread = atoi(optarg);

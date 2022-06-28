@@ -176,19 +176,7 @@ non_max_suppression_multi_class(SysInfo&, const void* args)
         float         table[0];
     } __attribute__((packed));
     const Prms*  prms = reinterpret_cast<const Prms*>(args);
-/*+DEBUG:shoz:22/02/06:
-    json res;
-    res["num_boxes"]       = prms->num_boxes;
-    res["num_class"]       = prms->num_class;
-    res["iou_threshold"]   = prms->iou_threshold;
-    res["score_threshold"] = prms->score_threshold;
-    res["sigma"]           = prms->sigma;
-    res["item"]            = prms->table[0];
-    res["boxes"]           = (long)(&prms->table[0]);
-    res["scores"]          = (long)(&prms->table[4*prms->num_boxes]);
-    return res.dump();
 
-/**/
     return non_max_suppression_multi_class(
         prms->num_boxes,
         prms->num_class,
@@ -198,7 +186,6 @@ non_max_suppression_multi_class(SysInfo&, const void* args)
         prms->score_threshold,
         prms->sigma
     );
-/**/
 }
 
 /*** nonmaxsuppression.cc *************************************************}}}*/

@@ -16,7 +16,7 @@
 
 /***  Type ****************************************************************}}}*/
 /**
-* convert "unsigned short" <-> "char[2]"
+* convert "unsigned int(32bit)" <-> "char[2]"
 **/
 /**************************************************************************{{{*/
 union Magic {
@@ -35,7 +35,7 @@ union Magic {
 * @retval res <  0  error
 **/
 /**************************************************************************{{{*/
-std::streamsize
+int
 rcv_packet_port(std::string& cmd_line)
 {
     try {
@@ -73,7 +73,7 @@ rcv_packet_port(std::string& cmd_line)
 * @return count of sent byte or error code
 **/
 /**************************************************************************{{{*/
-std::streamsize
+int
 snd_packet_port(std::string result)
 {
     try {
