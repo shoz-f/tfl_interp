@@ -1,5 +1,11 @@
 # Changelog
 
+## Release 0.1.6(Jun 29 2022)
+
+  * Major Features and Improvements
+    * Feedback based on OnnxInterp design.
+    * update Tensorflow to 2.9.1.
+
 ## Release 0.1.5(Apl 4 2022)
 
   * Major Features and Improvements
