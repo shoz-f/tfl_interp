@@ -14,7 +14,7 @@
 /**************************************************************************}}}**
 * 
 ***************************************************************************{{{*/
-TMLFunc non_max_suppression_multi_class;
+std::string non_max_suppression_multi_class(SysInfo& sys, const void* args);
 
 #define POST_PROCESS \
     non_max_suppression_multi_class

@@ -100,6 +100,7 @@ endif()
 # main
 add_executable(tfl_interp
   src/main.cc
+  src/tiny_ml.cc
   src/tfl_interp.cc
   src/io_port.cc
   src/nonmaxsuppression.cc
