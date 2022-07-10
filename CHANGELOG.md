@@ -2,7 +2,7 @@
 
 ## Release 0.1.7(2022)
 
-    * fixed command message of non_max_suppression_multi_class/7.
+    * fixed non_max_suppression_multi_class/7.
 
 ## Release 0.1.6(Jun 29 2022)
 
