@@ -1,6 +1,14 @@
 # Changelog
 
-## Release 0.1.7(2022)
+## Release 0.1.8(Aug 15 2022)
+
+  * Breaking Changes (from OnnxInterp 0.1.5)
+    * the previous download source of nlohmann-json is gone, so changed to another one.
+
+  * Bug Fixes and Other Changes (from OnnxInterp 0.1.4)
+    * added two more ways to specify box in NMS.
+
+## Release 0.1.7(Jul 11 2022)
 
     * fixed non_max_suppression_multi_class/7.
 
