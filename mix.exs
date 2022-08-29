@@ -7,7 +7,7 @@ defmodule TflInterp.MixProject do
       version: "0.1.8",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
-      compilers: [:cmake] ++ Mix.compilers(),
+      #compilers: [:cmake] ++ Mix.compilers(),
       description: description(),
       package: package(),
       deps: deps(),
@@ -32,7 +32,7 @@ defmodule TflInterp.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:poison, "~> 3.1"},
+      {:poison, "~> 5.0"},
       {:mix_cmake, "~> 0.1.2"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
