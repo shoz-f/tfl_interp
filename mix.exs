@@ -7,7 +7,7 @@ defmodule TflInterp.MixProject do
       version: "0.1.8",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
-      #compilers: [:cmake] ++ Mix.compilers(),
+      compilers: [:cmake] ++ Mix.compilers(),
       description: description(),
       package: package(),
       deps: deps(),
