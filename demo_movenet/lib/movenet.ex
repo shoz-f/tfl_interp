@@ -6,6 +6,7 @@ defmodule Movenet do
   alias TflInterp, as: NNInterp
   use NNInterp,
     model: "./model/lite-model_movenet_singlepose_lightning_tflite_int8_4.tflite",
+    url: "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/lite-model_movenet_singlepose_lightning_tflite_int8_4.tflite",
     inputs: [u8: {1,@height,@width,3}],
     outputs: [f32: {1,1,17,3}]
 
@@ -23,44 +24,53 @@ defmodule Movenet do
       |> Nx.from_binary(:f32) |> Nx.reshape({17, 3})
     
     # postprocess
-    {img_width, img_height, _, _} = CImg.shape(img)
-
-    {:ok, to_bones(output0, {img_width, img_height})}
+    {:ok, to_bones(output0, inv_aspect(img))}
   end
 
   @bones [
-    { 0,  1, {0,255,0}},
-    { 0,  2, {0,255,0}},
-    { 1,  3, {0,255,0}},
-    { 2,  4, {0,255,0}},
-    { 0,  5, {0,255,0}},
-    { 0,  6, {0,255,0}},
-    { 5,  7, {0,255,0}},
-    { 7,  9, {0,255,0}},
-    { 6,  8, {0,255,0}},
-    { 8, 10, {0,255,0}},
-    { 5,  6, {0,255,0}},
-    { 5, 11, {0,255,0}},
-    { 6, 12, {0,255,0}},
-    {11, 12, {0,255,0}},
-    {11, 13, {0,255,0}},
-    {13, 15, {0,255,0}},
-    {12, 14, {0,255,0}},
-    {14, 16, {0,255,0}},
+    { 0,  1, :fuchsia},
+    { 0,  2, :aqua   },
+    { 1,  3, :fuchsia},
+    { 2,  4, :aqua   },
+    { 0,  5, :fuchsia},
+    { 0,  6, :aqua   },
+    { 5,  7, :fuchsia},
+    { 7,  9, :fuchsia},
+    { 6,  8, :aqua   },
+    { 8, 10, :aqua   },
+    { 5,  6, :yellow },
+    { 5, 11, :fuchsia},
+    { 6, 12, :aqua   },
+    {11, 12, :yellow },
+    {11, 13, :fuchsia},
+    {13, 15, :fuchsia},
+    {12, 14, :aqua   },
+    {14, 16, :aqua   },
   ]
   
-  def to_bones(t, {w, h}, threshold \\ 0.11) do
-    {scale_x, scale_y} = if w > h, do: {1.0, w/h}, else: {h/w, 1.0}
-
+  def to_bones(t, {scale_x, scale_y}, threshold \\ 0.11) do
     Enum.flat_map(@bones, fn {p1, p2, color} ->
       [y1,x1,score1] = Nx.to_flat_list(t[p1])
       [y2,x2,score2] = Nx.to_flat_list(t[p2])
 
       if (score1 > threshold) && (score2 > threshold) do
-        [{x1*scale_x, y1*scale_y, x2*scale_x, y2*scale_y, color}]
+        x1 = x1*scale_x
+        y1 = y1*scale_y
+        x2 = x2*scale_x
+        y2 = y2*scale_y
+        [{x1, y1, x2, y2, color}]
       else
         []
       end
     end)
+  end
+
+  defp inv_aspect(img) do
+    {w, h, _, _} = CImg.shape(img)
+    if w > h, do: {1.0, w/h}, else: {h/w, 1.0}
+  end
+
+  defp clip(x, lower, upper) do
+    x |> max(lower) |> min(upper)
   end
 end
