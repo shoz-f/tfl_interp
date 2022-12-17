@@ -61,6 +61,7 @@ set_input_tensor(TinyMLInterp* interp, const void* args)
 {
     int res;
 
+    PACK(
     struct Prms {
         unsigned int size;
         unsigned int index;
@@ -68,7 +69,7 @@ set_input_tensor(TinyMLInterp* interp, const void* args)
         float         min;
         float         max;
         uint8_t        data[1];
-    } __attribute__((packed));
+    });
     const Prms*  prms = reinterpret_cast<const Prms*>(args);
     const int prms_size = sizeof(prms->size) + prms->size;
     const int data_size = prms_size - sizeof(Prms) + sizeof(uint8_t);
@@ -150,7 +151,7 @@ get_output_tensor(SysInfo& sys, const void* args)
 {
     struct Prms {
         unsigned int index;
-    } __attribute__((packed));
+    };
     const Prms*  prms = reinterpret_cast<const Prms*>(args);
 
     if (prms->index >= sys.mInterp->OutputCount()) {
@@ -179,16 +180,17 @@ std::string
 run(SysInfo& sys, const void* args)
 {
     // set input tensors
+    PACK(
     struct Prms {
         unsigned int  count;
-        unsigned char data[0];
-    } __attribute__((packed));
+        unsigned char data[1];
+    });
     const Prms* prms = reinterpret_cast<const Prms*>(args);
 
     sys.start_watch();
 
     const unsigned char* ptr = prms->data;
-    for (int i = 0; i < prms->count; i++) {
+    for (unsigned int i = 0; i < prms->count; i++) {
         int next = set_input_tensor(sys.mInterp, ptr);
         if (next < 0) {
             // error about input tensors: error_code {-1..-3}
@@ -210,12 +212,12 @@ run(SysInfo& sys, const void* args)
     sys.LAP_EXEC();
 
     // get output tensors  <<count::little-integer-32, size::little-integer-32, bin::binary-size(size), ..>>
-    int count = sys.mInterp->OutputCount();
+    uint32_t count = static_cast<uint32_t>(sys.mInterp->OutputCount());
     std::string output(reinterpret_cast<char*>(&count), sizeof(count));
 
-    for (int index = 0; index < count; index++) {
+    for (uint32_t index = 0; index < count; index++) {
         std::string&& otensor = sys.mInterp->get_output_tensor(index);
-        int size = otensor.size();
+        uint32_t size = static_cast<uint32_t>(otensor.size());
         output += std::string(reinterpret_cast<char*>(&size), sizeof(size))
                +  otensor;
     }
@@ -250,9 +252,9 @@ const int gMaxCmd = sizeof(gCmdTbl)/sizeof(TMLFunc*);
 **/
 /**************************************************************************{{{*/
 void
-interp(std::string& model, std::string& labels)
+interp(std::string& model, std::string& labels, std::string& inputs, std::string& outputs)
 {
-    init_interp(gSys, model);
+    init_interp(gSys, model, inputs, outputs);
 
     // load labels
     if (labels != "none") {
@@ -282,10 +284,11 @@ interp(std::string& model, std::string& labels)
         }
 
         // command branch
+        PACK(
         struct Cmd {
             unsigned int cmd;
             uint8_t        args[1];
-        } __attribute__((packed));
+        });
         const Cmd& call = *reinterpret_cast<const Cmd*>(cmd_line.data());
 
         std::string&& result = (call.cmd < gMaxCmd) ? gCmdTbl[call.cmd](gSys, call.args)

@@ -26,7 +26,7 @@
 * @retval
 **/
 /**************************************************************************{{{*/
-void init_interp(SysInfo& sys, std::string& tfl_model)
+void init_interp(SysInfo& sys, std::string& tfl_model, std::string& itempl, std::string& otempl)
 {
     
     sys.mInterp = new TflInterp(tfl_model, sys.mNumThread);

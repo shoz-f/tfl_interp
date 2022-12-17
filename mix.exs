@@ -25,7 +25,7 @@ defmodule TflInterp.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger, :ssl, :inets]
     ]
   end
 
@@ -33,7 +33,8 @@ defmodule TflInterp.MixProject do
   defp deps do
     [
       {:poison, "~> 5.0"},
-      {:mix_cmake, "~> 0.1.2"},
+      {:castore, "~> 0.1.19"},
+      {:mix_cmake, "~> 0.1.3"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
@@ -44,21 +45,26 @@ defmodule TflInterp.MixProject do
       # Specify cmake build directory or pseudo-path {:local, :global}.
       #   :local(default) - "./_build/.cmake_build"
       #   :global - "~/.#{Cmake.app_name()}"
-      #
       #build_dir: :local,
 
       # Specify cmake source directory.(default: File.cwd!)
-      #
       #source_dir: File.cwd!,
 
+      # Specify jobs parallel level.
+      build_parallel_level: 4
+    ]
+    ++ case :os.type do
+      {:win32, :nt} -> cmake_win32()
+      _ -> []
+    end
+  end
+
+  defp cmake_win32 do
+    [
       # Specify generator name.
       # "cmake --help" shows you build-in generators list.
       #
-      #generator: "MSYS Makefiles",
-
-      # Specify jobs parallel level.
-      #
-      build_parallel_level: 4
+      generator: "MSYS Makefiles",
     ]
   end
 

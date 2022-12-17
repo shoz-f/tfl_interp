@@ -3,9 +3,9 @@
 * tiny_ml.h
 *
 * system setting - used throughout the system
-* @author	   Shozo Fukuda
-* @date	create Sun Feb 13 15:17:40 JST 2022
-* System	   MINGW64/Windows 10<br>
+* @author      Shozo Fukuda
+* @date create Sun Feb 13 15:17:40 JST 2022
+* System       MINGW64/Windows 10<br>
 *
 *******************************************************************************/
 #ifndef _TINY_ML_H
@@ -21,6 +21,16 @@ namespace chrono = std::chrono;
 
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
+
+#ifdef __GNUC__
+#define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
+#endif
+
+#ifdef _MSC_VER
+#define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
+#endif
+
+#include "tensor_spec.h"
 
 /***  Class Header  *******************************************************}}}*/
 /**
@@ -58,7 +68,7 @@ protected:
 /**************************************************************************}}}**
 * system information
 ***************************************************************************{{{*/
-#define NUM_LAP	10
+#define NUM_LAP 10
 
 struct SysInfo {
     std::string     mExe;       // path of this executable
@@ -76,31 +86,31 @@ struct SysInfo {
     int (*mRcv)(std::string& cmd_line);
     int (*mSnd)(std::string result);
 
-    std::string label(int id) {
+    std::string label(size_t id) {
         return (id < mLabel.size()) ? mLabel[id] : std::to_string(id);
     }
 
     // stop watch
-	chrono::steady_clock::time_point mWatchStart;
-	chrono::milliseconds mLap[NUM_LAP];
+    chrono::steady_clock::time_point mWatchStart;
+    chrono::milliseconds mLap[NUM_LAP];
 
     void reset_lap() {
-    	for (int i = 0; i < NUM_LAP; i++) { mLap[i] = chrono::milliseconds(0); }
+        for (int i = 0; i < NUM_LAP; i++) { mLap[i] = chrono::milliseconds(0); }
     }
     void start_watch() {
-    	reset_lap();
-    	mWatchStart = chrono::steady_clock::now();
+        reset_lap();
+        mWatchStart = chrono::steady_clock::now();
     }
     void lap(int index) {
-    	chrono::steady_clock::time_point now = chrono::steady_clock::now();
-    	mLap[index] = chrono::duration_cast<chrono::milliseconds>(now - mWatchStart);
-    	mWatchStart = now;
+        chrono::steady_clock::time_point now = chrono::steady_clock::now();
+        mLap[index] = chrono::duration_cast<chrono::milliseconds>(now - mWatchStart);
+        mWatchStart = now;
     }
 };
 
-#define LAP_INPUT()		lap(0)
-#define LAP_EXEC()		lap(1)
-#define LAP_OUTPUT()	lap(2)
+#define LAP_INPUT()     lap(0)
+#define LAP_EXEC()      lap(1)
+#define LAP_OUTPUT()    lap(2)
 
 extern SysInfo gSys;
 
@@ -113,7 +123,7 @@ int snd_packet_port(std::string result);
 /**************************************************************************}}}**
 * service call functions
 ***************************************************************************{{{*/
-void interp(std::string& model, std::string& labels);
-void init_interp(SysInfo& sys, std::string& model);
+void interp(std::string& model, std::string& labels, std::string& inputs, std::string& outputs);
+void init_interp(SysInfo& sys, std::string& model, std::string& inputs, std::string& outputs);
 
 #endif /* _TINY_ML_H */

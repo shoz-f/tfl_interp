@@ -2,20 +2,22 @@ defmodule TflInterp do
   @moduledoc """
   Tensorflow lite intepreter for Elixir.
   Deep Learning inference framework for embedded devices.
+  """
 
+  @basic_usage """
   ## Basic Usage
   You get the trained tflite model and save it in a directory that your application can read.
   "your-app/priv" may be good choice.
-  
+
   ```
   $ cp your-trained-model.tflite ./priv
   ```
-  
-  Next, you will create a module that interfaces with the deep learning model. 
+
+  Next, you will create a module that interfaces with the deep learning model.
   The module will need pre-processing and post-processing in addition to inference
   processing, as in the example following. TflInterp provides inference processing
   only.
-  
+
   You put `use TflInterp` at the beginning of your module, specify the model path as an optional argument. In the inference
   section, you will put data input to the model (`TflInterp.set_input_tensor/3`), inference execution (`TflInterp.invoke/1`),
   and inference result retrieval (`TflInterp.get_output_tensor/2`).
@@ -52,7 +54,19 @@ defmodule TflInterp do
   """
 
   @timeout 300000
-  @padding 0
+
+  @framework "tflite"
+
+  # the suffix expected for the model
+  suffix = %{
+    "tflite"      => ".tflite",
+    "onnxruntime" => ".onnx",
+    "libtorch"    => ".pt"
+  }
+  @model_suffix suffix[String.downcase(@framework)]
+
+  # session record
+  defstruct module: nil, inputs: [], outputs: []
 
   defmacro __using__(opts) do
     quote generated: true, location: :keep do
@@ -65,24 +79,26 @@ defmodule TflInterp do
       def init(opts) do
         executable = Application.app_dir(:tfl_interp, "priv/tfl_interp")
         opts = Keyword.merge(unquote(opts), opts)
-        tfl_model  = Keyword.get(opts, :model)
-        tfl_label  = Keyword.get(opts, :label, "none")
-        tfl_opts   = Keyword.get(opts, :opts, "")
+        nn_model  = TflInterp.validate_model(Keyword.get(opts, :model), Keyword.get(opts, :url))
+        nn_label  = Keyword.get(opts, :label, "none")
+        nn_inputs  = Keyword.get(opts, :inputs, [])
+        nn_outputs = Keyword.get(opts, :outputs, [])
+        nn_opts   = Keyword.get(opts, :opts, "")
 
         port = Port.open({:spawn_executable, executable}, [
-          {:args, String.split(tfl_opts) ++ [tfl_model, tfl_label]},
+          {:args, String.split(nn_opts) ++ opt_tspecs("--inputs", nn_inputs) ++ opt_tspecs("--outputs", nn_outputs) ++ [nn_model, nn_label]},
           {:packet, 4},
           :binary
         ])
 
-        {:ok, %{port: port}}
+        {:ok, %{port: port, itempl: nn_inputs, otempl: nn_outputs}}
       end
-      
+
       def session() do
         %TflInterp{module: __MODULE__}
       end
 
-      def handle_call(cmd_line, _from, state) do
+      def handle_call(cmd_line, _from, state) when is_binary(cmd_line) do
         Port.command(state.port, cmd_line)
         response = receive do
           {_, {:data, <<result::binary>>}} -> {:ok, result}
@@ -92,13 +108,74 @@ defmodule TflInterp do
         {:reply, response, state}
       end
 
+      def handle_call({:itempl, index}, _from, %{itempl: template}=state) do
+        {:reply, {:ok, Enum.at(template, index)}, state}
+      end
+
+      def handle_call({:otempl, index}, _from, %{otempl: template}=state) do
+        {:reply, {:ok, Enum.at(template, index)}, state}
+      end
+
       def terminate(_reason, state) do
         Port.close(state.port)
+      end
+
+      defp opt_tspecs(_, []), do: []
+      defp opt_tspecs(opt_name, tspecs) do
+        [opt_name, Enum.map(tspecs, &tspec2str/1) |> Enum.join(":")]
+      end
+
+      defp tspec2str({:skip, _}), do: ""
+      defp tspec2str({dtype, shape}) do
+        dtype = Atom.to_string(dtype)
+        shape = Tuple.to_list(shape) |> Enum.map(fn :none->1; x->x end) |> Enum.join(",")
+        "#{dtype},#{shape}"
       end
     end
   end
 
-  defstruct module: nil, input: [], output: []
+
+  @doc """
+  Get name of backend NN framework.
+  """
+  def framework() do
+    @framework
+  end
+
+  @doc """
+  Ensure that the back-end framework is as expected.
+  """
+  def framework?(name) do
+    unless String.downcase(name) == String.downcase(@framework),
+      do: raise "Error: backend NN framework is \"#{@framework}\", not \"#{name}\"."
+  end
+
+  @doc """
+  Ensure that the model matches the back-end framework.
+
+  ## Parameters
+    * model - path of model file
+    * url - download site
+  """
+  def validate_model(nil, _), do: raise ArgumentError, "need a model file \"#{@model_suffix}\"."
+  def validate_model(model, url) do
+    validate_extname!(model)
+
+    abs_path = Path.expand(model)
+    unless File.exists?(abs_path) do
+        IO.puts("#{model}:")
+        {:ok, _} = TflInterp.URL.download(url, Path.dirname(abs_path), Path.basename(abs_path))
+    end
+    model
+  end
+
+  defp validate_extname!(model) do
+    actual_ext = Path.extname(model)
+    unless actual_ext == @model_suffix,
+      do: raise ArgumentError, "#{@framework} expects the model file \"#{@model_suffix}\" not \"#{actual_ext}\"."
+
+    actual_ext
+  end
 
   @doc """
   Get the propaty of the tflite model.
@@ -146,11 +223,11 @@ defmodule TflInterp do
     end
     mod
   end
-  
-  def set_input_tensor(%TflInterp{input: input}=session, index, bin, opts) do                                                                       
-    %TflInterp{session | input: [input_tensor(index, bin, opts) | input]}
+
+  def set_input_tensor(%TflInterp{inputs: inputs}=session, index, bin, opts) do
+    %TflInterp{session | inputs: [input_tensor(index, bin, opts) | inputs]}
   end
-  
+
   defp input_tensor(index, bin, opts) do
     dtype = case Keyword.get(opts, :dtype, "none") do
       "none" -> 0
@@ -158,26 +235,10 @@ defmodule TflInterp do
       "<f2"  -> 2
     end
     {lo, hi} = Keyword.get(opts, :range, {0.0, 1.0})
-    
+
     size = 16 + byte_size(bin)
-    
+
     <<size::little-integer-32, index::little-integer-32, dtype::little-integer-32, lo::little-float-32, hi::little-float-32, bin::binary>>
-  end
-
-  @doc """
-  Invoke prediction.
-
-  ## Parameters
-
-    * mod - modules' names
-  """
-  def invoke(mod) when is_atom(mod) do
-    cmd = 2
-    case GenServer.call(mod, <<cmd::little-integer-32>>, @timeout) do
-      {:ok, result} -> Poison.decode(result)
-      any -> any
-    end
-    mod
   end
 
   @doc """
@@ -188,50 +249,68 @@ defmodule TflInterp do
     * mod   - modules' names or session.
     * index - index of output tensor in the model
   """
-  def get_output_tensor(mod, index) when is_atom(mod) do
+  def get_output_tensor(mod, index, opts \\ [])
+
+  def get_output_tensor(mod, index, _opts) when is_atom(mod) do
     cmd = 3
     case GenServer.call(mod, <<cmd::little-integer-32, index::little-integer-32>>, @timeout) do
       {:ok, result} -> result
       any -> any
     end
   end
-  
-  def get_output_tensor(%TflInterp{output: output}, index) do
-    Enum.at(output, index)
+
+  def get_output_tensor(%TflInterp{outputs: outputs}, index, _opts) do
+    Enum.at(outputs, index)
   end
 
   @doc """
-  Execute the inference session. In session mode, data input/execution of
-  inference/output of results to the DL model is done all at once.
-  
+  Invoke prediction.
+
+  Two modes are toggled depending on the type of input data.
+  One is the stateful mode, in which input/output data are stored as model states.
+  The other mode is stateless, where input/output data is stored in a session
+  structure assigned to the application.
+
   ## Parameters
 
-    * session - session.
-  
+    * mod/session - modules name(stateful) or session structure(stateless).
+
   ## Examples.
-  
+
     ```elixir
-      output_bin =
-        session()
+      output_bin = session()  # stateless mode
         |> TflInterp.set_input_tensor(0, input_bin)
-        |> TflInterp.run()
+        |> TflInterp.invoke()
         |> TflInterp.get_output_tensor(0)
     ```
   """
-  def run(%TflInterp{module: mod, input: input}=session) do
+  def invoke(mod) when is_atom(mod) do
+    cmd = 2
+    case GenServer.call(mod, <<cmd::little-integer-32>>, @timeout) do
+      {:ok, result} -> Poison.decode(result)
+      any -> any
+    end
+    mod
+  end
+
+  def invoke(%TflInterp{module: mod, inputs: inputs}=session) do
     cmd   = 4
-    count = Enum.count(input)
-    data  = Enum.reduce(input, <<>>, fn x,acc -> acc <> x end)
+    count = Enum.count(inputs)
+    data  = Enum.reduce(inputs, <<>>, fn x,acc -> acc <> x end)
     case GenServer.call(mod, <<cmd::little-integer-32, count::little-integer-32>> <> data, @timeout) do
       {:ok, <<count::little-integer-32, results::binary>>} ->
-      	  if count > 0 do
-      	  	  %TflInterp{session | output: for <<size::little-integer-32, tensor::binary-size(size) <- results>> do tensor end}
-      	  else
-      	  	  "error: %{count}"
-      	  end
+          if count > 0 do
+              outputs = for <<size::little-integer-32, tensor::binary-size(size) <- results>> do tensor end
+              %TflInterp{session | outputs: outputs}
+          else
+              "error: %{count}"
+          end
       any -> any
     end
   end
+
+  @deprecated "Use invoke/1 instead"
+  def run(x), do: invoke(x)
 
   @doc """
   Execute post processing: nms.
@@ -248,9 +327,9 @@ defmodule TflInterp do
       * score_threshold: - score cutoff threshold
       * sigma:           - soft IOU parameter
       * boxrepr:         - type of box representation
-         * 0 - center pos and width/height
-         * 1 - top-left pos and width/height
-         * 2 - top-left and bottom-right corner pos
+         * :center  - center pos and width/height
+         * :topleft - top-left pos and width/height
+         * :corner  - top-left and bottom-right corner pos
   """
 
   def non_max_suppression_multi_class(mod, {num_boxes, num_class}, boxes, scores, opts \\ []) do
@@ -271,4 +350,32 @@ defmodule TflInterp do
       any -> any
     end
   end
+
+
+  @doc """
+  Adjust NMS result to aspect of the input image. (letterbox)
+
+  ## Parameters:
+
+    * nms_result - NMS result {:ok, result}
+    * [rx, ry] - aspect ratio of the input image
+  """
+  def adjust2letterbox(nms_result, aspect \\ [1.0, 1.0])
+
+  def adjust2letterbox({:ok, result}, [rx, ry]) do
+    {
+      :ok,
+      Enum.reduce(Map.keys(result), result, fn key,map ->
+        Map.update!(map, key, &Enum.map(&1, fn [score, x1, y1, x2, y2, index] ->
+          x1 = if x1 < 0.0, do: 0.0, else: x1
+          y1 = if y1 < 0.0, do: 0.0, else: y1
+          x2 = if x2 > 1.0, do: 1.0, else: x2
+          y2 = if y2 > 1.0, do: 1.0, else: y2
+          [score, x1/rx, y1/ry, x2/rx, y2/ry, index]
+        end))
+      end)
+    }
+  end
+
+  def adjust2letterbox(nms_result, _), do: nms_result
 end
