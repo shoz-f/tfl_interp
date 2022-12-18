@@ -2,7 +2,9 @@ defmodule MBertQA do
   @moduledoc """
   Documentation for `MBertQA`.
   """
-  use TflInterp, model: "./lite-model_mobilebert_1_metadata_1.tflite"
+  use TflInterp,
+    model: "./model/lite-model_mobilebert_1_metadata_1.tflite",
+    url: "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/lite-model_mobilebert_1_metadata_1.tflite"
   
   alias MBertQA.Feature
   
@@ -10,7 +12,7 @@ defmodule MBertQA do
   @predict_num 5
 
   def setup() do
-    Feature.load_dic("./vocab.txt")
+    Feature.load_dic("./model/vocab.txt")
   end
 
   def apply_mbert_qa(query, context, predict_num \\ @predict_num) do
@@ -48,21 +50,6 @@ defmodule MBertQA do
            Enum.slice(context, b..e) |> Enum.join(" "),
            score
          }
-       end)
-  end
-
-  def demo() do
-    setup()
-    
-    context = File.read!("./passage.txt")
-    IO.puts(">CONTEXT:\n#{context}")
-
-    query   = File.read!("./q.txt")
-    IO.puts(">QUESTION:\n#{query}")
-
-    __MODULE__.apply_mbert_qa(query, context)
-    |> Enum.each(fn {ans, score} ->
-         IO.puts("\n>ANS: \"#{ans}\", score:#{score}")
        end)
   end
 end

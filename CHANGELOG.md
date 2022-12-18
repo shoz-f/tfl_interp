@@ -1,5 +1,14 @@
 # Changelog
 
+## Release 0.1.9(Dec 18 2022)
+
+  * Major Features and Improvements
+    * feed back from AxonInterp project.
+    * added demo_yolov4.
+    * revised documents.
+    * added the ability to download model files from the url.
+    * added the ability to give hints about I/O tensor of the model.
+
 ## Release 0.1.8(Aug 15 2022)
 
   * Breaking Changes (from OnnxInterp 0.1.5)

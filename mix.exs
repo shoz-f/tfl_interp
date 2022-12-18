@@ -4,7 +4,7 @@ defmodule TflInterp.MixProject do
   def project do
     [
       app: :tfl_interp,
-      version: "0.1.8",
+      version: "0.1.9",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       compilers: [:cmake] ++ Mix.compilers(),
@@ -87,7 +87,15 @@ defmodule TflInterp.MixProject do
       extras: [
         "README.md",
 #        "LICENSE",
-        "CHANGELOG.md"
+        "CHANGELOG.md",
+
+        #Examples
+        "demo_mbert_qa/mbert_qa.livemd",
+        "demo_movenet/MoveNet.livemd",
+        "demo_yolov4/YOLOv4.livemd"
+      ],
+      groups_for_extras: [
+        "Examples": Path.wildcard("demo_*/*.livemd")
       ],
 #      source_ref: "v#{@version}",
 #      source_url: @source_url,
