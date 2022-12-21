@@ -1,4 +1,12 @@
 defmodule DemoMovenet do
+  def img_list(src, range) do
+    Enum.map(range, fn i ->
+      name = ExPrintf.sprintf("%03d.jpg", [i])
+      path = Path.join(src, name)
+      CImg.load(path)
+    end)
+  end
+
   def run(src, dst, range) do
     Enum.each(range, fn i ->
       name = ExPrintf.sprintf("%03d.jpg", [i])

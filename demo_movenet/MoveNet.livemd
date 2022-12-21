@@ -46,16 +46,17 @@ defmodule Movenet do
   use NNInterp,
     model: "./model/lite-model_movenet_singlepose_lightning_tflite_int8_4.tflite",
     url:
-      "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/lite-model_movenet_singlepose_lightning_tflite_int8_4.tflite",
+      "https://tfhub.dev/google/lite-model/movenet/singlepose/lightning/tflite/int8/4?lite-format=tflite",
     inputs: [u8: {1, @height, @width, 3}],
     outputs: [f32: {1, 1, 17, 3}]
 
+  @prepro CImg.builder()
+          |> CImg.resize({@width, @height}, :ul, 0)
+          |> CImg.to_binary(dtype: "<u1")
+
   def apply(img) do
     # preprocess
-    input0 =
-      CImg.builder(img)
-      |> CImg.resize({@width, @height}, :ul, 0)
-      |> CImg.to_binary(dtype: "<u1")
+    input0 = CImg.run(@prepro, img)
 
     # prediction
     output0 =
@@ -117,6 +118,7 @@ end
 Launch `Movenet`.
 
 ```elixir
+# TflInterp.stop(Movenet)
 Movenet.start_link([])
 ```
 
@@ -138,13 +140,20 @@ defmodule LiveMovenet do
     end)
   end
 
+  def animate(img_list) do
+    Kino.animate(img_list, fn img ->
+      draw_movenet(img)
+      |> CImg.display_kino(:jpeg)
+    end)
+  end
+
   def run(path) do
     CImg.load(path)
     |> draw_movenet()
     |> CImg.display_kino(:jpeg)
   end
 
-  def draw_movenet(img) do
+  defp draw_movenet(img) do
     with {:ok, res} <- Movenet.apply(img) do
       Enum.reduce(res, CImg.builder(img), fn {x1, y1, x2, y2, color}, canvas ->
         CImg.draw_line(canvas, x1, y1, x2, y2, color, thick: 5)
@@ -161,10 +170,7 @@ img_list = LiveMovenet.img_list("young-people-dancing", 1..200)
 ```
 
 ```elixir
-Kino.animate(img_list, fn img ->
-  LiveMovenet.draw_movenet(img)
-  |> CImg.display_kino(:jpeg)
-end)
+LiveMovenet.animate(img_list)
 ```
 
 ## 4.TIL ;-)
