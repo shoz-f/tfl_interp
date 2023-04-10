@@ -17,7 +17,7 @@
 
 #include <string>
 #include "tiny_ml.h"
-#include <getopt.h>
+#include "getopt/getopt.h"
 
 /***  Global **************************************************************}}}*/
 /**

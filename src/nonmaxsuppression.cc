@@ -106,7 +106,7 @@ public:
 
 //ATTRIBUTE:
 protected:
-    unsigned int mIndex;
+    unsigned int  mIndex;
     float         mBBox[4];
     float         mArea;
     float         mScore;

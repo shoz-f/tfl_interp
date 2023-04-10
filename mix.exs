@@ -63,8 +63,18 @@ defmodule TflInterp.MixProject do
     [
       # Specify generator name.
       # "cmake --help" shows you build-in generators list.
+#      generator: "Visual Studio 16 2019",
+
+      # Specify CPU architecture
+      platform: "x64",
+
+      # Visual C++ configuration
+      build_config: "Release"
+
+      # Specify generator name.
+      # "cmake --help" shows you build-in generators list.
       #
-      generator: "MSYS Makefiles",
+      # generator: "MSYS Makefiles",
     ]
   end
 
