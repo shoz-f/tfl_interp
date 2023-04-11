@@ -90,23 +90,6 @@ endif()
 
 include_directories(${NLOHMANN_JSON_ROOTDIR}/include)
 
-# apply the patch to TensorFlow file set when target is Windows.
-#IF((${CMAKE_HOST_SYSTEM_NAME} MATCHES "Windows") AND (NOT EXISTS ${CMAKE_SOURCE_DIR}/3rd_party/patched))
-#  execute_process(
-#    COMMAND patch --verbos -p1 -i ${CMAKE_SOURCE_DIR}/msys2.patch1
-#    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/3rd_party
-#  )
-#  file(TOUCH ${CMAKE_SOURCE_DIR}/3rd_party/patched)
-#endif()
-#
-#IF((${CMAKE_HOST_SYSTEM_NAME} MATCHES "Windows") AND (NOT EXISTS ${CMAKE_BINARY_DIR}/patched))
-#  execute_process(
-#    COMMAND patch --verbos -p1 -i ${CMAKE_SOURCE_DIR}/msys2.patch2
-#    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#  )
-#  file(TOUCH ${CMAKE_BINARY_DIR}/patched)
-#endif()
-
 # main
 add_executable(tfl_interp
     src/main.cc

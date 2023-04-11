@@ -4,7 +4,7 @@ defmodule TflInterp.MixProject do
   def project do
     [
       app: :tfl_interp,
-      version: "0.1.9",
+      version: "0.1.10",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       compilers: [:cmake] ++ Mix.compilers(),
@@ -34,6 +34,7 @@ defmodule TflInterp.MixProject do
     [
       {:poison, "~> 5.0"},
       {:castore, "~> 0.1.19"},
+      {:progress_bar, "~> 2.0"},
       {:mix_cmake, "~> 0.1.3"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
@@ -70,11 +71,6 @@ defmodule TflInterp.MixProject do
 
       # Visual C++ configuration
       build_config: "Release"
-
-      # Specify generator name.
-      # "cmake --help" shows you build-in generators list.
-      #
-      # generator: "MSYS Makefiles",
     ]
   end
 
