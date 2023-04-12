@@ -23,7 +23,7 @@ set(NERVES_ARMV7NEON rpi2 rpi3 rpi3a bbb osd32mp1)
 set(NERVES_AARCH64 rpi4)
 
 if(MSVC)
-    string(APPEND CMAKE_CXX_FLAGS " /wd4819")
+    # empty now
 
 elseif("$ENV{MIX_TARGET}" IN_LIST NERVES_ARMV6)
     message("Target is ARMv6")

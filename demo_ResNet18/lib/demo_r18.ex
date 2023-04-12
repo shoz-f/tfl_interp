@@ -33,18 +33,14 @@ defmodule DemoR18 do
     # postprocess
     exp = Nx.exp(outputs)
 
-    # softmax
-    Nx.divide(exp, Nx.sum(exp))
+    Nx.divide(exp, Nx.sum(exp))     # softmax
     |> Nx.argsort(direction: :desc)
     |> Nx.slice([0], [top])
     |> Nx.to_flat_list()
     |> Enum.map(&@imagenet1000[&1])
   end
-  
-  def run() do
-    unless File.exists?("lion.jpg"),
-      do: NNInterp.URL.download("https://github.com/shoz-f/nn-interp/releases/download/0.0.1/lion.jpg")
 
+  def run() do
     CImg.load("lion.jpg")
     |> __MODULE__.apply(3)
     |> IO.inspect()
