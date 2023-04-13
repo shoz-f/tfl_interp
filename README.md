@@ -17,19 +17,20 @@ And I'm trying to make TflInterp easy to install.
 
 ### short or concise history
 The development of Tflinterp started in 2020 Nov. The original idea was to use Nerves to create an AI remote controlled car.
-In the first version, I implemented Yolo3, but the design strongly depended on the model, which made it difficult to use in other applications.
+In the first version, I implemented Yolo3, but the design strongly depended on that model, which made it difficult to use in other applications.
 Reflecting on that mistake, I redesigned Tflinterp according to the above design guidelines.
 
 ## Platform
 It has been confirmed to work in the following OS environment.
 
-- Windows MSYS2/MinGW64
+- Windows Visual C++ 2019
 - WSL2/Ubuntu 20.04
 - Nerves ARMv6, ARMv7NEON and AArch64
 
 ## Requirements
 - cmake 3.18.6 or later
 - git
+- Visual C++ 2019 for Windows
 
 ## Installation
 Since 0.1.3, the installation method of this module has changed.
@@ -37,27 +38,35 @@ You may need to remove previously installed TflInterp before installing new vers
 
 There are two installation methods. You can choose either one according to your purpose.
 
-1. Like any other elixir module, add TflInterp to the dependency list in the mix.exs.
+Method-1. Like any other elixir module, add TflInterp to the dependency list in the mix.exs.
 
 ```
 def deps do
   [
     ...
-    {:tfl_interp, github: "shoz-f/tfl_interp", branch: "nerves"}
+    {:tfl_interp, "~> 0.1.10"},
   ]
 end
 ```
 
-2. Download TflInterp to a directory in advance, and add that path to the dependency list in mix.exs.
+Method-2. Download TflInterp to a directory and build it ahead of time.
 
 ```
 # download TflInterp in advance.
 $ cd /home/{your home}/workdir
 $ git clone -b nerves https://github.com/shoz-f/tfl_interp.git
+$ cd tfl_interp
+$ mix deps.get
+$ mix compile
 ```
+
+After adding the directory path to the dependency list in your mix.exs file, add the following line to the deps() function: `System.put_env("SKIP_MAKE_TFLINTERP", "YES")`
+
+This line sets an environment variable that instructs your TflInterp application to use the precompiled tfl_interp.exe file, eliminating the need to build it again.
 
 ```
 def deps do
+  System.put_env("SKIP_MAKE_TFLINTERP", "YES)
   [
     ...
     {:tfl_interp, path: "/home/{your home}/workdir/tfl_interp"}
@@ -89,7 +98,7 @@ method 2 saves them under "/home/{your home}/workdir/tfl_interp".
 If you want to reuse the downloaded files in other applications, I recommend Method 2.
 
 In either method 1 or 2, the external modules required for Tensorflow lite are stored under
-"{your app}/_build/{target}/.cmake_build" according to the cmakelists.txt that comes with Tensorflow.
+their "_build/{target}/.cmake_build" according to the cmakelists.txt that comes with Tensorflow.
 
  [^1] Unfortunately, the ARM toolchain that comes with Nerves can not build Tensorflow lite. We need to get the toolchain recommended by the Tensorflow project.
 
@@ -134,13 +143,12 @@ work_dir
   +- your-app
   |    +- _build/
   |    |    +- dev/
-  |    |         +- .cmake_build/ --- CMakeCash.txt and external modules that Tensorflowlite depends on.
-  |    |         |                    The cmake build outputs are stored here also.
   |    |         +- lib/
   |    |         |    +- tfl_interp
   |    |         |         +- ebin/
   |    |         |         +- priv
   |    |         |              +- tfl_interp --- executable: tensorflow interpreter.
+  |    |         |                                copy it from the tfl_interp project.
   |    |         :
   |    |
   |    +- deps/
@@ -150,6 +158,18 @@ work_dir
   |
   +- tfl_interp
        +- 3rd_party/ --- Tensorflow sources, etc.
+       +- _build/
+       |    +- dev/
+       |         +- .cmake_build/ --- CMakeCash.txt and external modules that Tensorflowlite depends on.
+       |         |                    The cmake build outputs are stored here also.
+       |         +- lib/
+       |         |    +- tfl_interp
+       |         |         +- ebin/
+       |         |         +- priv
+       |         |              +- tfl_interp --- executable: tensorflow interpreter.
+       |         :
+       |
+       +- deps/
        +- lib/ --- TflInterp module.
        +- src/ --- tfl_interp C++ sources.
        +- test/
@@ -214,7 +234,7 @@ $ mix deps.get
 $ mix run --no-halt
 ```
 
-And then, please open your browser with "http://localhost:500".
+And then, please open your browser with "http://localhost:5000".
 
 ## License
 TflInterp is licensed under the Apache License Version 2.0.
