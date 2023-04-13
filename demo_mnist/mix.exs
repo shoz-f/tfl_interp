@@ -21,6 +21,7 @@ defmodule TflMnist.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
+    System.put_env("SKIP_MAKE_TFLINTERP", "YES")
     [
       {:plug_cowboy, "~> 2.5"},
       {:plug_static_index_html, "~> 1.0"},

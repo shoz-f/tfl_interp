@@ -21,6 +21,7 @@ defmodule DemoMBertQA.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
+    System.put_env("SKIP_MAKE_TFLINTERP", "YES")
     [
       {:tfl_interp, path: ".."},
       {:nx, "~> 0.4.0"}

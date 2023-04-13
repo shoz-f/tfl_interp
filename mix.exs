@@ -7,7 +7,7 @@ defmodule TflInterp.MixProject do
       version: "0.1.10",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
-      compilers: [:cmake] ++ Mix.compilers(),
+      compilers: unless(check_env?("SKIP_MAKE_TFLINTERP"), do: [:cmake], else: []) ++ Mix.compilers(),
       description: description(),
       package: package(),
       deps: deps(),
@@ -17,10 +17,13 @@ defmodule TflInterp.MixProject do
       # Docs
       # name: "tfl_interp",
       source_url: "https://github.com/shoz-f/tfl_interp.git",
-      
+
       docs: docs()
     ]
   end
+
+  defp check_env?(name), do:
+    System.get_env(name, "NO") |> String.upcase() |> Kernel.in(["YES", "OK", "TRUE"])
 
   # Run "mix help compile.app" to learn about applications.
   def application do
@@ -64,7 +67,7 @@ defmodule TflInterp.MixProject do
     [
       # Specify generator name.
       # "cmake --help" shows you build-in generators list.
-#      generator: "Visual Studio 16 2019",
+      #generator: "Visual Studio 16 2019",
 
       # Specify CPU architecture
       platform: "x64",

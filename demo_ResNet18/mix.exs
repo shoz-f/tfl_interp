@@ -5,7 +5,7 @@ defmodule DemoR18.MixProject do
     [
       app: :demo_r18,
       version: "0.1.0",
-      elixir: "~> 1.13",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -21,11 +21,11 @@ defmodule DemoR18.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    System.put_env("NNINTERP", "Tflite")
+    System.put_env("SKIP_MAKE_TFLINTERP", "yes")
     [
+      {:tfl_interp, path: ".."},
       {:nx, "~> 0.2.1"},
-      {:cimg, github: "shoz-f/cimg_ex"},
-      {:tfl_interp, path: ".."}
+      {:cimg, github: "shoz-f/cimg_ex"}
     ]
   end
 end
