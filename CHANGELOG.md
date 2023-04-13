@@ -1,5 +1,15 @@
 # Changelog
 
+## Release 0.1.10(Apl 12 2023)
+
+  * Major Features and Improvements
+    * TensorFlow background process has been updated to version 2.12.
+    * model downloader now includes a progress bar feature.
+    * environment variable `SKIP_MAKE_TFLINTERP` to use the precompiled tfl_interp.exe.
+
+  * Bug Fixes and Other Changes
+    * the build tool chain in Windows has been replaced from MINGW gcc to Visual C++ 2019.
+
 ## Release 0.1.9(Dec 18 2022)
 
   * Major Features and Improvements
