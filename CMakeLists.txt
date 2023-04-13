@@ -90,6 +90,13 @@ endif()
 
 include_directories(${NLOHMANN_JSON_ROOTDIR}/include)
 
+# custom operations
+set(CUSTOM_OPS
+    src/custom_ops/max_pool_argmax.cc
+    src/custom_ops/max_unpooling.cc
+    src/custom_ops/transpose_conv_bias.cc
+    )
+
 # main
 add_executable(tfl_interp
     src/main.cc
@@ -99,6 +106,7 @@ add_executable(tfl_interp
     src/nonmaxsuppression.cc
     src/getopt/getopt.c
     src/getopt/getopt_long.c
+    ${CUSTOM_OPS}
 )
 target_link_libraries(tfl_interp
     tensorflow-lite
