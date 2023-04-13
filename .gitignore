@@ -26,6 +26,8 @@ tfl_interp-*.tar
 /tmp
 
 mix.lock
+*.tflite
+*.onnx
 *~
 toolchains/
 3rd_party/
