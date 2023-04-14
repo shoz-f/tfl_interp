@@ -42,7 +42,7 @@ endif()
 
 ################################################################################
 # project start here
-project(tfl_interp CXX)
+project(tfl_interp CXX C)
 
 install(CODE "set(CMAKE_INSTALL_LOCAL_ONLY ON)")
 
