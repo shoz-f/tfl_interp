@@ -18,12 +18,10 @@
 #include "tensorflow/lite/kernels/internal/types.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
 
-namespace mediapipe {
-namespace tflite_operations {
+namespace custom_operations {
 
 TfLiteRegistration* RegisterConvolution2DTransposeBias();
 
-}  // namespace tflite_operations
-}  // namespace mediapipe
+}  // namespace custom_operations
 
 #endif  // MEDIAPIPE_UTIL_TFLITE_OPERATIONS_TRANSPOSE_CONV_BIAS_H_

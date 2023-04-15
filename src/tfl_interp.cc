@@ -17,6 +17,8 @@
 
 #define TFLITE_EXPERIMENTAL 1
 
+void add_custom_operations(tflite::ops::builtin::BuiltinOpResolver& resolver);
+
 /***  Module Header  ******************************************************}}}*/
 /**
 * initialize interpreter
@@ -28,7 +30,6 @@
 /**************************************************************************{{{*/
 void init_interp(SysInfo& sys, std::string& tfl_model, std::string& itempl, std::string& otempl)
 {
-    
     sys.mInterp = new TflInterp(tfl_model, sys.mNumThread);
 }
 
@@ -45,6 +46,11 @@ TflInterp::TflInterp(std::string tfl_model, int thread)
     mModel = tflite::FlatBufferModel::BuildFromFile(tfl_model.c_str());
 
     tflite::ops::builtin::BuiltinOpResolver resolver;
+
+    // install custom operations
+    add_custom_operations(resolver);
+    //
+
     tflite::InterpreterBuilder builder(*mModel, resolver);
     builder.SetNumThreads(thread);
     builder(&mInterpreter);

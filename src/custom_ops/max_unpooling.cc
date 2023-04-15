@@ -18,8 +18,7 @@
 #include "tensorflow/lite/kernels/internal/tensor.h"
 #include "tensorflow/lite/kernels/padding.h"
 
-namespace mediapipe {
-namespace tflite_operations {
+namespace custom_operations {
 namespace {
 
 constexpr int kDataInputTensor = 0;
@@ -146,5 +145,4 @@ TfLiteRegistration* RegisterMaxUnpooling2D() {
   return &reg;
 }
 
-}  // namespace tflite_operations
-}  // namespace mediapipe
+}  // namespace custom_operations

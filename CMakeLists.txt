@@ -92,6 +92,7 @@ include_directories(${NLOHMANN_JSON_ROOTDIR}/include)
 
 # custom operations
 set(CUSTOM_OPS
+    src/custom_ops/custom_operations.cc
     src/custom_ops/max_pool_argmax.cc
     src/custom_ops/max_unpooling.cc
     src/custom_ops/transpose_conv_bias.cc

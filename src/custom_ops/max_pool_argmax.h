@@ -17,12 +17,10 @@
 
 #include "tensorflow/lite/kernels/kernel_util.h"
 
-namespace mediapipe {
-namespace tflite_operations {
+namespace custom_operations {
 
 TfLiteRegistration* RegisterMaxPoolingWithArgmax2D();
 
-}  // namespace tflite_operations
-}  // namespace mediapipe
+}  // namespace custom_operations
 
 #endif  // MEDIAPIPE_UTIL_TFLITE_OPERATIONS_MAX_POOL_ARGMAX_H_
