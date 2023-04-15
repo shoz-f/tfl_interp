@@ -4,9 +4,10 @@
 File.cd!(__DIR__)
 # for windows JP
 # System.shell("chcp 65001")
+System.put_env("SKIP_MAKE_TFLINTERP", "YES")
 
 Mix.install([
-  {:onnx_interp, "~> 0.1.8"},
+  {:tfl_interp, path: ".."},
   {:cimg, "~> 0.1.14"},
   {:postdnn, "~> 0.1.5"},
   {:kino, "~> 0.7.0"}
@@ -25,12 +26,12 @@ This note usee the pretraind model converted from above project ;-)
 
 ---
 
-## Implementation with OnnxInterp in Elixir
+## Implementation with TflInterp in Elixir
 
 ## 1.Defining the inference module: YOLOv4
 
 * Model<br>
-  yolov4_1_3_608_608_static.onnx
+  yolov4_1_3_608_608_static.tflite
 
 * Pre-processing<br>
   Resize the input image to the size {608,608}, normalize to {0.0,1.0} and transpose NCHW.
@@ -45,12 +46,12 @@ defmodule YOLOv4 do
     Pytorch-YOLOv4 - https://github.com/Tianxiaomo/pytorch-YOLOv4
   """
 
-  alias OnnxInterp, as: NNInterp
+  alias TflInterp, as: NNInterp
 
   use NNInterp,
-    model: "./model/yolov4_1_3_608_608_static.onnx",
+    model: "./model/yolov4_1_3_608_608_static.tflite",
     url:
-      "https://github.com/shoz-f/onnx_interp/releases/download/models/yolov4_1_3_608_608_static.onnx",
+      "https://drive.google.com/uc?authuser=0&export=download&confirm=t&id=1z02aAUJ_phk3mom_w7J1fKbe9F_UM1HT",
     inputs: [f32: {1, 3, 608, 608}],
     outputs: [f32: {1, 22743, 1, 4}, f32: {1, 22743, 80}]
 
@@ -92,7 +93,7 @@ YOLOv4.start_link([])
 Display the properties of the `YOLOv4` model.
 
 ```elixir
-OnnxInterp.info(YOLOv4)
+TflInterp.info(YOLOv4)
 ```
 
 ## 2.Defining execution module LiveYOLOv4
