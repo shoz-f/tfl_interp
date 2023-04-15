@@ -8,7 +8,7 @@ System.put_env("SKIP_MAKE_TFLINTERP", "YES")
 
 Mix.install([
   {:tfl_interp, path: ".."},
-  {:cimg, github: "shoz-f/cimg_ex"},
+  {:cimg, "~> 0.1.19"},
   {:nx, "~> 0.4.0"},
   {:kino, "~> 0.7.0"}
 ])
@@ -16,9 +16,8 @@ Mix.install([
 
 ## 0.Original work
 
-torchvision.models.resnet18 -  pre-trained model included in Pytorch.
-
-* https://pytorch.org/vision/main/models/generated/torchvision.models.resnet18.html
+"Real-time hair segmentation and recoloring on Mobile GPUs", Google Research.
+* https://sites.google.com/view/perception-cv4arvr/hair-segmentation
 
 ***Thanks a lot!!!***
 
@@ -35,7 +34,7 @@ torchvision.models.resnet18 -  pre-trained model included in Pytorch.
   Resize the input image to the size `{@width, @height}` and normalize {0.0, 1.0}.
 
 * Post-processing<br>
-  Overlap the mask image, output of inference, on the input image.
+  Overlap the mask on the input image.
 
 ```elixir
 defmodule HairSegmentation do
@@ -78,7 +77,7 @@ defmodule HairSegmentation do
     Nx.greater(hair, background)
     |> Nx.to_binary()
     |> CImg.from_binary(@width, @height, 1, 1, dtype: "<u1")
-    |> CImg.resize({w, h})
+    |> CImg.resize({w, h})  # make image
   end
 
   def coloring(img, color, opacity \\ 0.5) do
@@ -91,7 +90,7 @@ end
 Launch `HairSegmentation`.
 
 ```elixir
-# AxonInterp.stop(HairSegmentation)
+# TflInterp.stop(HairSegmentation)
 HairSegmentation.start_link([])
 ```
 

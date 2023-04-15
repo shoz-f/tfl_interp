@@ -25,7 +25,7 @@ defmodule DemoHairSegmentation.MixProject do
     [
       {:tfl_interp, path: ".."},
       {:nx, "~> 0.4.0"},
-      {:cimg, github: "shoz-f/cimg_ex"},
+      {:cimg, "~> 0.1.19"}
     ]
   end
 end

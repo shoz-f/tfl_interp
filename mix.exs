@@ -101,7 +101,9 @@ defmodule TflInterp.MixProject do
         #Examples
         "demo_mbert_qa/mbert_qa.livemd",
         "demo_movenet/MoveNet.livemd",
-        "demo_yolov4/YOLOv4.livemd"
+        "demo_yolov4/YOLOv4.livemd",
+        "demo_ResNet18/Resnet18.livemd",
+        "demo_hairsegmentation/HairSegmentation.livemd"
       ],
       groups_for_extras: [
         "Examples": Path.wildcard("demo_*/*.livemd")

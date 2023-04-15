@@ -86,7 +86,7 @@ end
 Launch `Resnet18`.
 
 ```elixir
-# AxonInterp.stop(Resnet18)
+# TflInterp.stop(Resnet18)
 Resnet18.start_link([])
 ```
 

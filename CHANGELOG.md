@@ -6,6 +6,8 @@
     * TensorFlow background process has been updated to version 2.12.
     * model downloader now includes a progress bar feature.
     * environment variable `SKIP_MAKE_TFLINTERP` to use the precompiled tfl_interp.exe.
+    * included custom operations: `MaxPoolingWithArgmax2D`, `MaxUnpooling2D`, `Convolution2DTransposeBias`.
+    * added demo_hairsegmentation.
 
   * Bug Fixes and Other Changes
     * the build tool chain in Windows has been replaced from MINGW gcc to Visual C++ 2019.
