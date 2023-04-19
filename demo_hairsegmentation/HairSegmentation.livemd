@@ -28,7 +28,7 @@ Mix.install([
 ## 1.Defining the inference module: HairSegmentation
 
 * Model<br>
-  resnet18.axon: get from "https://storage.googleapis.com/mediapipe-assets/hair_segmentation.tflite" if not existed.
+  hair_segmentation.tflite: get from "https://storage.googleapis.com/mediapipe-assets/hair_segmentation.tflite" if not existed.
 
 * Pre-processing<br>
   Resize the input image to the size `{@width, @height}` and normalize {0.0, 1.0}.
