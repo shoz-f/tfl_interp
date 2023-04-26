@@ -96,6 +96,7 @@ set(CUSTOM_OPS
     src/custom_ops/max_pool_argmax.cc
     src/custom_ops/max_unpooling.cc
     src/custom_ops/transpose_conv_bias.cc
+    src/custom_ops/extract_image_patches.cc
     )
 
 # main

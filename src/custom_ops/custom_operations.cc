@@ -15,6 +15,7 @@
 #include "max_pool_argmax.h"
 #include "max_unpooling.h"
 #include "transpose_conv_bias.h"
+#include "extract_image_patches.h"
 
 /***  Module Header  ******************************************************}}}*/
 /**
@@ -30,6 +31,7 @@ void add_custom_operations(tflite::ops::builtin::BuiltinOpResolver& resolver)
     resolver.AddCustom("MaxPoolingWithArgmax2D", custom_operations::RegisterMaxPoolingWithArgmax2D());
     resolver.AddCustom("MaxUnpooling2D", custom_operations::RegisterMaxUnpooling2D());
     resolver.AddCustom("Convolution2DTransposeBias", custom_operations::RegisterConvolution2DTransposeBias());
+    resolver.AddCustom("ExtractImagePatches", custom_operations::RegisterExtractImagePatches());
 }
 
 /*** custom_operations.cc *************************************************}}}*/
