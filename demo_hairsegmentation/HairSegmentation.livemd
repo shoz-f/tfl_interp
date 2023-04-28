@@ -94,7 +94,7 @@ Launch `HairSegmentation`.
 HairSegmentation.start_link([])
 ```
 
-Display the properties of the `Resnet18` model.
+Display the properties of the `HairSegmentation` model.
 
 ```elixir
 TflInterp.info(HairSegmentation)
