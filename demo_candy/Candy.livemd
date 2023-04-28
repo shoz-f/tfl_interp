@@ -1,0 +1,100 @@
+# Fast Neural Style Transfer
+
+```elixir
+File.cd!(__DIR__)
+# for windows JP
+System.shell("chcp 65001")
+System.put_env("SKIP_MAKE_TFLINTERP", "YES")
+
+Mix.install([
+  {:tfl_interp, path: ".."},
+  {:cimg, "~> 0.1.19"},
+  {:kino, "~> 0.7.0"}
+])
+```
+
+## 0.Original work
+Fast Neural Style Transfer
+* https://github.com/onnx/models/tree/main/vision/style_transfer/fast_neural_style
+
+fast-neural-style in PyTorch
+* https://github.com/pytorch/examples/tree/main/fast_neural_style
+
+***Thanks a lot!!!***
+
+---
+
+## Implementation with TflInterp in Elixir
+
+## 1.Defining the inference module: Candy
+
+* Model<br>
+  candy.tflite: get from "https://github.com/shoz-f/tinyML_livebook/releases/download/model/candy.tflite" if not existed.
+
+* Pre-processing<br>
+  Resize the input image to {@width, @height}, normalize it to a range of {0.0, 255.0} and transpose NCHW.
+
+* Post-processing<br>
+  The candy colored image is outputted directly by this model.
+
+```elixir
+defmodule Candy do
+  @width  224
+  @height 224
+
+  alias TflInterp, as: NNInterp
+  use NNInterp,
+    model: "./model/candy.tflite",
+    url: "https://github.com/shoz-f/tinyML_livebook/releases/download/model/candy.tflite",
+    inputs: [f32: {1,@height,@width,3}],
+    outputs: [f32: {1,@height,@width,3}]
+
+  def apply(img) do
+    # preprocess
+    input0 = CImg.builder(img)
+      |> CImg.resize({@width, @height})
+      |> CImg.to_binary([{:range, {0.0, 255.0}}, :nchw])
+
+    # prediction
+    output = session()
+      |> NNInterp.set_input_tensor(0, input0)
+      |> NNInterp.invoke()
+      |> NNInterp.get_output_tensor(0)
+   
+   #postprocess
+   {w, h, _, _} = CImg.shape(img)
+
+   output
+   |> CImg.from_binary(@width, @height, 1, 3, [{:range, {0.0, 255.0}}, :nchw])
+   |> CImg.resize({w, h})
+  end
+end
+```
+
+Launch `Candy`.
+
+```elixir
+# TflInterp.stop(Candy)
+Candy.start_link([])
+```
+
+Display the properties of the `Candy` model.
+
+```elixir
+TflInterp.info(Candy)
+```
+
+## 2.Let's try it
+
+Load a photo and apply Candy to it.
+
+```elixir
+img = CImg.load("flog.jpg")
+
+result = Candy.apply(img)
+
+Enum.map([img, result], &CImg.display_kino(&1, :jpeg))
+|> Kino.Layout.grid(columns: 2)
+```
+
+&#9633;
