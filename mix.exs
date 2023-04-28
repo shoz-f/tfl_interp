@@ -4,7 +4,7 @@ defmodule TflInterp.MixProject do
   def project do
     [
       app: :tfl_interp,
-      version: "0.1.10",
+      version: "0.1.11",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       compilers: unless(check_env?("SKIP_MAKE_TFLINTERP"), do: [:cmake], else: []) ++ Mix.compilers(),
@@ -103,7 +103,11 @@ defmodule TflInterp.MixProject do
         "demo_movenet/MoveNet.livemd",
         "demo_yolov4/YOLOv4.livemd",
         "demo_ResNet18/Resnet18.livemd",
-        "demo_hairsegmentation/HairSegmentation.livemd"
+        "demo_hairsegmentation/HairSegmentation.livemd",
+        "demo_candy/Candy.livemd",
+        "demo_midas/Midas.livemd",
+        "demo_yolox/YoloX.livemd",
+        "demo_deepfillv2/DeepFillV2.livemd"
       ],
       groups_for_extras: [
         "Examples": Path.wildcard("demo_*/*.livemd")

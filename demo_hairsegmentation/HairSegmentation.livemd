@@ -27,13 +27,16 @@ Mix.install([
 
 ## 1.Defining the inference module: HairSegmentation
 
-* Model<br>
+* Model
+
   hair_segmentation.tflite: get from "https://storage.googleapis.com/mediapipe-assets/hair_segmentation.tflite" if not existed.
 
-* Pre-processing<br>
+* Pre-processing
+
   Resize the input image to the size `{@width, @height}` and normalize {0.0, 1.0}.
 
-* Post-processing<br>
+* Post-processing
+
   Overlap the mask on the input image.
 
 ```elixir

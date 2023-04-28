@@ -1,5 +1,14 @@
 # Changelog
 
+## Release 0.1.11(Apl 29 2023)
+
+  * Major Features and Improvements
+    * included custom operations: `ExtractImagePatches`.
+
+  * Bug Fixes and Other Changes
+    * add demo applications: Candy, Midas, YoloX and DeepFillV2.
+    * revised to shallow clone Tensorflow file set.
+
 ## Release 0.1.10(Apl 12 2023)
 
   * Major Features and Improvements

@@ -30,13 +30,16 @@ This note usee the pretraind model converted from above project ;-)
 
 ## 1.Defining the inference module: YOLOv4
 
-* Model<br>
+* Model
+
   yolov4_1_3_608_608_static.tflite
 
-* Pre-processing<br>
+* Pre-processing
+
   Resize the input image to the size {608,608}, normalize to {0.0,1.0} and transpose NCHW.
 
-* Post-processing<br>
+* Post-processing
+
   Filtering Boxes(output[0]) and Scores(output[1]) with Multi-class Non Maximum Suppression.
 
 ```elixir

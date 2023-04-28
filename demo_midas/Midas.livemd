@@ -17,6 +17,7 @@ Mix.install([
 ## 0.Original work
 
 Intelligent Systems Lab Org:
+
 "Towards Robust Monocular Depth Estimation: Mixing Datasets for Zero-shot Cross-dataset Transfer"
 
 * https://arxiv.org/abs/1907.01341v3
@@ -30,13 +31,16 @@ Intelligent Systems Lab Org:
 
 ## 1.Defining the inference module: Midas
 
-* Model<br>
+* Model
+
   midas.tflite: get from "https://github.com/isl-org/MiDaS/releases/download/v2_1/model_opt.tflite" if not existed.
 
-* Pre-processing<br>
+* Pre-processing
+
   Resize input image to {@width, @height} and normalize it to a range of {-1.0, 1.0}.
 
-* Post-processing<br>
+* Post-processing
+
   The depth image {@width, @height, 1} is outputted directly by this model.
 
 ```elixir

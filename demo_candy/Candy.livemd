@@ -28,13 +28,16 @@ fast-neural-style in PyTorch
 
 ## 1.Defining the inference module: Candy
 
-* Model<br>
+* Model
+
   candy.tflite: get from "https://github.com/shoz-f/tinyML_livebook/releases/download/model/candy.tflite" if not existed.
 
-* Pre-processing<br>
+* Pre-processing
+
   Resize the input image to {@width, @height}, normalize it to a range of {0.0, 255.0} and transpose NCHW.
 
-* Post-processing<br>
+* Post-processing
+
   The candy colored image is outputted directly by this model.
 
 ```elixir

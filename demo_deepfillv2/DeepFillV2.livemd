@@ -25,6 +25,7 @@ Mix.install([
 GitHub: Generative Image Inpainting - https://github.com/JiahuiYu/generative_inpainting
 
 The tflite model `deepfillv2.tflite` is converted from their pretraind model.
+
 ***Thanks a lot!!!***
 
 ---
@@ -33,13 +34,16 @@ The tflite model `deepfillv2.tflite` is converted from their pretraind model.
 
 ## 1.Defining the inference module: DeepFillV2
 
-* Model<br>
+* Model
+
   deepfillv2.tflite: get from "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/deepfillv2.tflite" if not existed.
 
-* Pre-processing<br>
+* Pre-processing
+
   Combine the original and mask images into a single image, then resize it to {@width, @height} and normalize it to a range of {0.0, 255.0} for further manipulation.
 
-* Post-processing<br>
+* Post-processing
+
   The inpainted image is outputted directly by this model.
 
 ```elixir

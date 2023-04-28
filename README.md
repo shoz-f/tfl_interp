@@ -44,7 +44,7 @@ Method-1. Like any other elixir module, add TflInterp to the dependency list in 
 def deps do
   [
     ...
-    {:tfl_interp, "~> 0.1.10"},
+    {:tfl_interp, "~> 0.1.11"},
   ]
 end
 ```

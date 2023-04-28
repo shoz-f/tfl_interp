@@ -28,13 +28,16 @@ torchvision.models.resnet18 -  pre-trained model included in Pytorch.
 
 ## 1.Defining the inference module: ResNet18
 
-* Model<br>
+* Model
+
   resnet18.axon: get from "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/resnet18.tflite" if not existed.
 
-* Pre-processing<br>
+* Pre-processing
+
   Resize the input image to the size `{@width, @height}` and gaussian normalize.
 
-* Post-processing<br>
+* Post-processing
+
   Sort outputs and take first item.
 
 ```elixir

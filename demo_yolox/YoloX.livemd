@@ -17,7 +17,8 @@ Mix.install([
 
 ## 0.Original work
 
-Ge, Zheng and Liu, Songtao and Wang, Feng and Li, Zeming and Sun, Jian
+Zheng Ge, Zheng and Liu, Songtao and Wang, Feng and Li, Zeming and Sun, Jian
+
 "YOLOX: Exceeding YOLO Series in 2021"
 
 * https://arxiv.org/abs/2107.08430
@@ -35,13 +36,16 @@ Ge, Zheng and Liu, Songtao and Wang, Feng and Li, Zeming and Sun, Jian
 
 ## 1.Defining the inference module: YoloX
 
-* Model<br>
+* Model
+
   yolox.tflite: get from "https://github.com/shoz-f/tinyML_livebook/releases/download/model/yolox_s.tflite" if not existed.
 
-* Pre-processing<br>
+* Pre-processing
+
   Resize input image to {@width, @height}, normalize it to a range of {0.0, 255.0} and transpose NCHW.
 
-* Post-processing<br>
+* Post-processing
+
   Divide the output to `boxes` and `scores`, and then filter them with Multi-class Non Maximum Suppression.
 
 ```elixir
