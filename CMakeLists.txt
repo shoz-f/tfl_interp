@@ -62,6 +62,7 @@ if(NOT EXISTS ${CMAKE_SOURCE_DIR}/3rd_party/tensorflow_src)
     FetchContent_Declare(tensorflow
 	GIT_REPOSITORY https://github.com/tensorflow/tensorflow.git
 	GIT_TAG        v2.12.0
+	GIT_SHALLOW    TRUE
 	GIT_PROGRESS   TRUE
 	SOURCE_DIR "${THIRD_PARTY}/tensorflow_src"
 	SOURCE_SUBDIR tensorflow/lite
