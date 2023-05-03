@@ -7,7 +7,7 @@ defmodule DeepFillV2 do
     model: "./model/deepfillv2.tflite",
     url: "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/deepfillv2.tflite",
     inputs: [f32: {1,@height,2*@width,3}],
-    outputs: [f32: {1,@height,@width,3}]
+    outputs: [u8: {1,@height,@width,3}]
 
   def apply(img, mask) do
     # preprocess
