@@ -242,6 +242,20 @@ defmodule TflInterp do
   end
 
   @doc """
+  Put flat binaries to the input tensors on the interpreter.
+
+  ## Parameters
+
+    * mod   - modules' names or session.
+    * from  - first index of input tensor in the model
+    * items - list of input data - flat binary, cf. serialized tensor
+  """
+  def set_input_tensors(mod, from, items) when is_list(items) do
+    Enum.with_index(items, from)
+    |> Enum.reduce(mod, fn {item, i}, mod -> set_input_tensor(mod, i, item) end)
+  end
+  
+  @doc """
   Get the flat binary from the output tensor on the interpreter.
 
   ## Parameters
@@ -263,6 +277,18 @@ defmodule TflInterp do
     Enum.at(outputs, index)
   end
 
+  @doc """
+  Get list of the flat binary from the output tensoron the interpreter.
+
+  ## Parameters
+
+    * mod   - modules' names or session.
+    * range - range of output tensor in the model
+  """
+  def get_output_tensors(mod, range) do
+    for i <- range, do: get_output_tensor(mod, i)
+  end
+  
   @doc """
   Invoke prediction.
 
