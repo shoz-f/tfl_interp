@@ -22,10 +22,8 @@ defmodule Candy do
       |> NNInterp.get_output_tensor(0)
    
    #postprocess
-   {w, h, _, _} = CImg.shape(img)
-
    output
    |> CImg.from_binary(@width, @height, 1, 3, [{:range, {0.0, 255.0}}, :nchw])
-   |> CImg.resize({w, h})
+   |> CImg.resize(img)
   end
 end

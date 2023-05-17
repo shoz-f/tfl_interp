@@ -24,7 +24,7 @@ defmodule DemoCandy.MixProject do
     System.put_env("SKIP_MAKE_TFLINTERP", "yes")
     [
       {:tfl_interp, path: ".."},
-      {:cimg, "~> 0.1.19"}
+      {:cimg, "~> 0.1.20"}
     ]
   end
 end
