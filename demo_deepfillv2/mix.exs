@@ -21,7 +21,7 @@ defmodule DemoDeepFillV2.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    System.put_env("CMAKE_SKIP", "yes")
+    System.put_env("NNCOMPILED", "yes")
     [
       {:tfl_interp, path: "..", system_env: [{"CMAKE_ENV", "HELLOW"}]},
       {:nx, "~> 0.4.0"},
