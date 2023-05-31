@@ -1,5 +1,11 @@
 # Changelog
 
+## Release 0.1.12(May 31 2023)
+
+  * Major Features and Improvements
+    * (experimental) replace environment variable `SKIP_MAKE_TFLINTERP` with "NNCOMPILED" to use the precompiled
+      tfl_interp.exe. now, the precompiled tfl_interp.exe is downloaded from GitHub at runtime.
+
 ## Release 0.1.11(Apl 29 2023)
 
   * Major Features and Improvements
