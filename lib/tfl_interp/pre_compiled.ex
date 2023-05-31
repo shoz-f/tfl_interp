@@ -10,7 +10,7 @@ defmodule TflInterp.PreCompiled do
   
   @os_default (case :os.type() do
     {:win32, :nt}   -> %{name: {"windows", "x86_64"}, ext: ".exe"}
-    {:unix, :linue} -> %{name: {"linux",   "x86_64"}, ext: ""}
+    {:unix, :linux} -> %{name: {"linux",   "x86_64"}, ext: ""}
     x -> IO.inspect(x, label: "[Error] Unknown host os")
   end)
   
