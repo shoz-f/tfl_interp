@@ -64,20 +64,27 @@ defmodule TflInterp do
     "libtorch"    => ".pt"
   }
   @model_suffix suffix[String.downcase(@framework)]
-
+  
   # session record
   defstruct module: nil, inputs: [], outputs: []
 
   defmacro __using__(opts) do
     quote generated: true, location: :keep do
       use GenServer
+      alias TflInterp.MixProject
+      alias TflInterp.PreCompiled
 
       def start_link(opts) do
         GenServer.start_link(__MODULE__, opts, name: __MODULE__)
       end
 
       def init(opts) do
-        executable = Application.app_dir(:tfl_interp, "priv/tfl_interp")
+        executable = if MixProject.using_precompiled?() do
+          System.get_env("NNINTERP") |> PreCompiled.download()
+        else
+          Application.app_dir(:tfl_interp, "priv/tfl_interp")
+        end
+
         opts = Keyword.merge(unquote(opts), opts)
         nn_model  = TflInterp.validate_model(Keyword.get(opts, :model), Keyword.get(opts, :url))
         nn_label  = Keyword.get(opts, :label, "none")

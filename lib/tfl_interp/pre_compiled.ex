@@ -13,7 +13,10 @@ defmodule TflInterp.PreCompiled do
     {:unix, :linux} -> %{name: {"linux",   "x86_64"}, ext: ""}
     x -> IO.inspect(x, label: "[Error] Unknown host os")
   end)
-  
+
+
+  def using?(),
+    do: System.get_env("NNCOMPILED", "NO") |> String.upcase() |> Kernel.in(["YES", "OK", "TRUE"])
 
   def download(name, force \\ false) do
     # complement target name.

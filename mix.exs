@@ -7,23 +7,21 @@ defmodule TflInterp.MixProject do
       version: "0.1.11",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
-      compilers: unless(check_env?("SKIP_MAKE_TFLINTERP"), do: [:cmake], else: []) ++ Mix.compilers(),
       description: description(),
       package: package(),
       deps: deps(),
 
-      cmake: cmake(),
-      
       # Docs
       # name: "tfl_interp",
       source_url: "https://github.com/shoz-f/tfl_interp.git",
 
       docs: docs()
     ]
+    ++ unless using_precompiled?(), do: cmake_conf(), else: []
   end
 
-  defp check_env?(name), do:
-    System.get_env(name, "NO") |> String.upcase() |> Kernel.in(["YES", "OK", "TRUE"])
+  def using_precompiled?(),
+    do: System.get_env("NNCOMPILED", "NO") |> String.upcase() |> Kernel.in(["YES", "OK", "TRUE"])
 
   # Run "mix help compile.app" to learn about applications.
   def application do
@@ -38,29 +36,33 @@ defmodule TflInterp.MixProject do
       {:poison, "~> 5.0"},
       {:castore, "~> 0.1.19"},
       {:progress_bar, "~> 2.0"},
-      {:mix_cmake, "~> 0.1.3"},
+      {:mix_cmake, path: "../mix_cmake"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
   
   # Cmake configuration.
-  defp cmake do
+  defp cmake_conf do
     [
-      # Specify cmake build directory or pseudo-path {:local, :global}.
-      #   :local(default) - "./_build/.cmake_build"
-      #   :global - "~/.#{Cmake.app_name()}"
-      #build_dir: :local,
+      compilers: [:cmake] ++ Mix.compilers(),
 
-      # Specify cmake source directory.(default: File.cwd!)
-      #source_dir: File.cwd!,
+      cmake: [
+        # Specify cmake build directory or pseudo-path {:local, :global}.
+        #   :local(default) - "./_build/.cmake_build"
+        #   :global - "~/.#{Cmake.app_name()}"
+        #build_dir: :local,
 
-      # Specify jobs parallel level.
-      build_parallel_level: 4
+        # Specify cmake source directory.(default: File.cwd!)
+        #source_dir: File.cwd!,
+
+        # Specify jobs parallel level.
+        build_parallel_level: 4
+      ]
+      ++ case :os.type do
+        {:win32, :nt} -> cmake_win32()
+        _ -> []
+      end
     ]
-    ++ case :os.type do
-      {:win32, :nt} -> cmake_win32()
-      _ -> []
-    end
   end
 
   defp cmake_win32 do
