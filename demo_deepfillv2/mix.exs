@@ -21,9 +21,9 @@ defmodule DemoDeepFillV2.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    System.put_env("SKIP_MAKE_TFLINTERP", "yes")
+    System.put_env("CMAKE_SKIP", "yes")
     [
-      {:tfl_interp, path: ".."},
+      {:tfl_interp, path: "..", system_env: [{"CMAKE_ENV", "HELLOW"}]},
       {:nx, "~> 0.4.0"},
       {:cimg, "~> 0.1.19"}
     ]
