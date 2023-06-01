@@ -1,10 +1,10 @@
-# Generative Inpainting
+# style-based GAN
 
 ```elixir
 File.cd!(__DIR__)
 # for windows JP
 System.shell("chcp 65001")
-System.put_env("SKIP_MAKE_TFLINTERP", "YES")
+System.put_env("NNCOMPILED", "YES")
 
 Mix.install([
   {:tfl_interp, path: ".."},
@@ -15,19 +15,19 @@ Mix.install([
 
 ## 0.Original work
 
-"Generative Image Inpainting with Contextual Attention"
+"Training Generative Adversarial Networks with Limited Data"
 
-* https://arxiv.org/abs/1801.07892
+* https://arxiv.org/abs/2006.06676
 
-"Free-Form Image Inpainting with Gated Convolution"
+GitHub: StyleGAN2 with adaptive discriminator augmentation
 
-* https://arxiv.org/abs/1806.03589
+* https://github.com/NVlabs/stylegan2-ada
 
-GitHub: Generative Image Inpainting
+GitHub: sugyan/gan-playground
 
-* https://github.com/JiahuiYu/generative_inpainting
+* https://github.com/sugyan/gan-playground
 
-The tflite model `deepfillv2.tflite` is converted from their pretraind model.
+The tflite model `idol-face-2021-03.tflite` is converted from sugyan's pretraind model.
 
 ***Thanks a lot!!!***
 
@@ -35,79 +35,70 @@ The tflite model `deepfillv2.tflite` is converted from their pretraind model.
 
 ## Implementation with TflInterp in Elixir
 
-## 1.Defining the inference module: DeepFillV2
+## 1.Defining the inference module: StyleGAN2ADA
 
 * Model
 
-  deepfillv2.tflite: get from "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/deepfillv2.tflite" if not existed.
+  idol-face-2021-03.tflite: get from "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/idol-face-2021-03.tflite" if not existed.
 
 * Pre-processing
 
-  Combine the original and mask images into a single image, then resize it to {@width, @height} and normalize it to a range of {0.0, 255.0} for further manipulation.
+  Make a latent - 512 size normal random number vector.
 
 * Post-processing
 
-  The inpainted image is outputted directly by this model.
+  The generated image is outputted directly by this model.
 
 ```elixir
-defmodule DeepFillV2 do
-  @width 680
-  @height 512
+defmodule StyleGAN2ADA do
+  @width 256
+  @height 256
 
   alias TflInterp, as: NNInterp
 
   use NNInterp,
-    model: "./model/deepfillv2.tflite",
-    url: "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/deepfillv2.tflite",
-    inputs: [f32: {1, @height, 2 * @width, 3}],
+    model: "./model/idol-face-2021-03.tflite",
+    url: "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/idol-face-2021-03.tflite",
+    inputs: [f32: {1, 512}],
     outputs: [u8: {1, @height, @width, 3}]
 
-  def apply(img, mask) do
+  def apply() do
     # preprocess
-    input0 =
-      CImg.builder(img)
-      |> CImg.append(mask, :x)
-      |> CImg.resize({2 * @width, @height})
-      |> CImg.to_binary(range: {0.0, 255.0})
+    input0 = for _ <- 1..512, into: "", do: <<:rand.normal()::little-float-32>>
 
     # prediction
-    {w, h, _, _} = CImg.shape(img)
+    output0 =
+      session()
+      |> NNInterp.set_input_tensor(0, input0)
+      |> NNInterp.invoke()
+      |> NNInterp.get_output_tensor(0)
 
-    session()
-    |> NNInterp.set_input_tensor(0, input0)
-    |> NNInterp.invoke()
-    |> NNInterp.get_output_tensor(0)
-    |> CImg.from_binary(@width, @height, 1, 3, [{:dtype, "<u1"}, :bgr])
-    |> CImg.resize({w, h})
+    # postprocess
+    CImg.from_binary(output0, @width, @height, 1, 3, dtype: "<u1")
   end
 end
 ```
 
-Launch `DeepFillV2`.
+Launch `StyleGAN2ADA`.
 
 ```elixir
-# TflInterp.stop(DeepFillV2)
-DeepFillV2.start_link([])
+# TflInterp.stop(StyleGAN2ADA)
+StyleGAN2ADA.start_link([])
 ```
 
-Display the properties of the `DeepFillV2` model.
+Display the properties of the `StyleGAN2ADA` model.
 
 ```elixir
-TflInterp.info(DeepFillV2)
+TflInterp.info(StyleGAN2ADA)
 ```
 
 ## 2.Let's try it
 
-Load a photo and apply DeepFillV2 to it.
+Load a photo and apply StyleGAN2ADA to it.
 
 ```elixir
-origin = CImg.load("sample_raw.jpg")
-mask = CImg.load("sample_mask.jpg")
-
-result = DeepFillV2.apply(origin, mask)
-
-Enum.map([origin, mask, result], &CImg.display_kino(&1, :jpeg))
-|> Kino.Layout.grid(columns: 2)
+Enum.into(1..8, [], fn _ -> StyleGAN2ADA.apply() |> CImg.display_kino(:jpeg) end)
+|> Kino.Layout.grid(columns: 4)
 ```
 
 &#9633;
