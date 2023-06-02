@@ -15,7 +15,7 @@ defmodule TflInterp.PreCompiled do
   end)
 
 
-  def using?(),
+  def using_precompiled?(),
     do: System.get_env("NNCOMPILED", "NO") |> String.upcase() |> Kernel.in(["YES", "OK", "TRUE"])
 
   def download(name, force \\ false) do
