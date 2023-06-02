@@ -94,10 +94,10 @@ TflInterp.info(StyleGAN2ADA)
 
 ## 2.Let's try it
 
-Load a photo and apply StyleGAN2ADA to it.
+Generate 8 photos by StyleGAN2ADA and display them.
 
 ```elixir
-Enum.into(1..8, [], fn _ -> StyleGAN2ADA.apply() |> CImg.display_kino(:jpeg) end)
+Enum.map(1..8, fn _ -> StyleGAN2ADA.apply() |> CImg.display_kino(:jpeg) end)
 |> Kino.Layout.grid(columns: 4)
 ```
 
