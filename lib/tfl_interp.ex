@@ -79,7 +79,7 @@ defmodule TflInterp do
       end
 
       def init(opts) do
-        executable = if MixProject.using_precompiled?() do
+        executable = if PreCompiled.using_precompiled?() do
           System.get_env("NNINTERP") |> PreCompiled.download()
         else
           Application.app_dir(:tfl_interp, "priv/tfl_interp")
