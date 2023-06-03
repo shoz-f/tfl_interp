@@ -45,6 +45,6 @@ defmodule TflInterp.PreCompiled do
 
   defp append_if(a, true,  x), do: List.insert_at(a, -1, x)
   defp append_if(a, false, _), do: a
-  
-  def unzip(zipfile, folder), do: System.cmd("unzip", [zipfile], cd: folder) 
+
+  defp unzip(zipfile, folder), do: System.shell("unzip #{zipfile}", cd: folder)
 end
