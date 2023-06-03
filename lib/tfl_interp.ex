@@ -86,11 +86,11 @@ defmodule TflInterp do
         end
 
         opts = Keyword.merge(unquote(opts), opts)
-        nn_model  = TflInterp.validate_model(Keyword.get(opts, :model), Keyword.get(opts, :url))
-        nn_label  = Keyword.get(opts, :label, "none")
+        nn_model   = TflInterp.validate_model(Keyword.get(opts, :model), Keyword.get(opts, :url))
+        nn_label   = Keyword.get(opts, :label, "none")
         nn_inputs  = Keyword.get(opts, :inputs, [])
         nn_outputs = Keyword.get(opts, :outputs, [])
-        nn_opts   = Keyword.get(opts, :opts, "")
+        nn_opts    = Keyword.get(opts, :opts, "")
 
         port = Port.open({:spawn_executable, executable}, [
           {:args, String.split(nn_opts) ++ opt_tspecs("--inputs", nn_inputs) ++ opt_tspecs("--outputs", nn_outputs) ++ [nn_model, nn_label]},
