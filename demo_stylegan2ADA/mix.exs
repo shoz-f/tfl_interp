@@ -24,7 +24,6 @@ defmodule DemoStyleGAN2ADA.MixProject do
     System.put_env("NNCOMPILED", "yes")
     [
       {:tfl_interp, path: ".."},
-      {:nx, "~> 0.4.0"},
       {:cimg, "~> 0.1.19"}
     ]
   end
