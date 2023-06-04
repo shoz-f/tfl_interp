@@ -3,9 +3,9 @@ defmodule TflInterp.PreCompiled do
 
   @url %{
     "tflite-cpu-windows-x86_64" =>
-      "https://github.com/shoz-f/tfl_interp/releases/download/0.1.11/tfl_interp-cpu-windows-x86_64.exe",
+      {"tfl_interp.exe", "https://github.com/shoz-f/tfl_interp/releases/download/0.1.11/tfl_interp-cpu-windows-x86_64.zip"},
     "tflite-cpu-linux-x86_64" =>
-      "https://github.com/shoz-f/tfl_interp/releases/download/0.1.11/tfl_interp-cpu-linux-x86_64",
+      {"tfl_interp", "https://github.com/shoz-f/tfl_interp/releases/download/0.1.11/tfl_interp-cpu-linux-x86_64.zip"},
   }
   
   @os_default (case :os.type() do
@@ -31,13 +31,13 @@ defmodule TflInterp.PreCompiled do
       |> Enum.join("-")
 
     # download *interp
-    url        = Map.get(@url, target)
-    path       = Application.app_dir(:tfl_interp, "priv")
-    executable = Path.join(path, Path.basename(url))
+    {exe, url} = Map.get(@url, target)
+    folder     = Application.app_dir(:tfl_interp, "priv")
+    executable = Path.join(folder, exe)
 
     if force || !File.exists?(executable) do
-      URL.download(url, path)
-      File.chmod(executable, 0o755)
+      {:ok, zipfile} = URL.download(url, folder)
+      unzip(zipfile, folder)
     end
 
     executable
@@ -45,4 +45,6 @@ defmodule TflInterp.PreCompiled do
 
   defp append_if(a, true,  x), do: List.insert_at(a, -1, x)
   defp append_if(a, false, _), do: a
+  
+  def unzip(zipfile, folder), do: System.cmd("unzip", [zipfile], cd: folder) 
 end
