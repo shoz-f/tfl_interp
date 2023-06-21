@@ -1,13 +1,13 @@
 defmodule StyleGAN2ADA do
-  @width  256
-  @height 256
+  @width  512
+  @height 512
 
   alias TflInterp, as: NNInterp
   use NNInterp,
-    model: "./model/idol-face-2021-03.tflite",
-    url: "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/idol-face-2021-03.tflite",
+    model: "./model/afhqdog.tflite",
+    url: "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/afhqdog.tflite",
     inputs: [f32: {1,512}],
-    outputs: [u8: {1,@height,@width,3}]
+    outputs: [f32: {1,3,@height,@width}]
 
   def apply() do
     # preprocess
@@ -20,6 +20,6 @@ defmodule StyleGAN2ADA do
       |> NNInterp.get_output_tensor(0)
 
     # postprocess
-    CImg.from_binary(output0, @width, @height, 1, 3, dtype: "<u1")
+    CImg.from_binary(output0, @width, @height, 1, 3, [{:range, {-1.0, 1.0}}, :nchw])
   end
 end
