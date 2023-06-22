@@ -9,7 +9,8 @@ System.put_env("NNCOMPILED", "YES")
 Mix.install([
   {:tfl_interp, "~> 0.1.13"},
   {:cimg, "~> 0.1.19"},
-  {:kino, "~> 0.7.0"}
+  {:kino, "~> 0.7.0"},
+  {:nx, "~> 0.5.3"}
 ])
 ```
 
@@ -50,60 +51,56 @@ The tflite model `afhqdog.tflite` is converted from pretraind model in pickle fo
   Convert float32 {-1.0, 1.0} to pixel and transpose NCHW to NHWC.
 
 ```elixir
-defmodule StyleGAN2ADA do
-  def apply(), do: gen_latants() |> apply()
-
-  def apply(latants) do
-    latants
-    |> StyleGAN2ADA.Mapping.apply()
-    |> StyleGAN2ADA.Synthesis.apply()
-  end
-
-  def gen_latants() do
-    for _ <- 1..512, into: "", do: <<:rand.normal()::little-float-32>>
-  end
-end
-
 defmodule StyleGAN2ADA.Mapping do
   alias TflInterp, as: NNInterp
+
   use NNInterp,
     model: "./model/afhqdog.mapping.tflite",
     url: "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/afhqdog.mapping.tflite",
-    inputs: [f32: {1,512}],
-    outputs: [f32: {1,16.512}]
+    inputs: [f32: {1, 512}],
+    outputs: [f32: {1, 16.512}]
 
-  def apply(latants) do
+  def dlatants() do
+    dlatants(for _ <- 1..512, into: "", do: <<:rand.normal()::little-float-32>>)
+  end
+
+  def dlatants(latants) do
     # preprocess
     input0 = latants
 
     # prediction
-    output0 = session()
+    output0 =
+      session()
       |> NNInterp.set_input_tensor(0, input0)
       |> NNInterp.invoke()
       |> NNInterp.get_output_tensor(0)
-    
+
     # postprocess
-    output0
+    Nx.from_binary(output0, :f32) |> Nx.reshape({16, 512})
   end
 end
+```
 
+```elixir
 defmodule StyleGAN2ADA.Synthesis do
-  @width  512
+  @width 512
   @height 512
 
   alias TflInterp, as: NNInterp
+
   use NNInterp,
     model: "./model/afhqdog.synthesis.tflite",
     url: "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/afhqdog.synthesis.tflite",
-    inputs: [f32: {1,16,512}],
-    outputs: [f32: {1,3,@height,@width}]
+    inputs: [f32: {1, 16, 512}],
+    outputs: [f32: {1, 3, @height, @width}]
 
-  def apply(dlatants) do
+  def image(dlatants) do
     # preprocess
-    input0 = dlatants
+    input0 = Nx.to_binary(dlatants)
 
     # prediction
-    output0 = session()
+    output0 =
+      session()
       |> NNInterp.set_input_tensor(0, input0)
       |> NNInterp.invoke()
       |> NNInterp.get_output_tensor(0)
@@ -117,24 +114,40 @@ end
 Launch `StyleGAN2ADA.Mapping` and `StyleGAN2ADA.Synthesis`.
 
 ```elixir
-# TflInterp.stop(StyleGAN2ADA)
+# TflInterp.stop(StyleGAN2ADA.Mapping)
 StyleGAN2ADA.Mapping.start_link([])
+```
+
+```elixir
+# TflInterp.stop(StyleGAN2ADA.Synthesis)
 StyleGAN2ADA.Synthesis.start_link([])
 ```
 
 Display the properties of the `StyleGAN2ADA` model.
 
 ```elixir
-TflInterp.info(StyleGAN2ADA)
+TflInterp.info(StyleGAN2ADA.Mapping)
+```
+
+```elixir
+TflInterp.info(StyleGAN2ADA.Synthesis)
 ```
 
 ## 2.Let's try it
 
-Generate 8 photos by StyleGAN2ADA and display them.
+Morphing between two randomly generated images.
 
 ```elixir
-Enum.map(1..8, fn _ -> StyleGAN2ADA.apply() |> CImg.display_kino(:jpeg) end)
-|> Kino.Layout.grid(columns: 4)
+a = StyleGAN2ADA.Mapping.dlatants()
+b = StyleGAN2ADA.Mapping.dlatants()
+delta = Nx.subtract(b, a) |> Nx.divide(5)
+
+Enum.map(0..5, fn i ->
+  Nx.add(a, Nx.multiply(delta, i))
+  |> StyleGAN2ADA.Synthesis.image()
+  |> CImg.display_kino(:jpeg)
+end)
+|> Kino.Layout.grid(columns: 6)
 ```
 
 &#9633;
