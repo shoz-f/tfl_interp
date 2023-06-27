@@ -61,12 +61,17 @@ defmodule StyleGAN2ADA.Mapping do
     outputs: [f32: {1, 16.512}]
 
   def dlatants() do
-    dlatants(for _ <- 1..512, into: "", do: <<:rand.normal()::little-float-32>>)
+    for _ <- 1..512, into: "" do
+      <<:rand.normal()::little-float-32>>
+    end
+    |> Nx.from_binary(:f32)
+    |> Nx.reshape({1, 512})
+    |> dlatants()
   end
 
   def dlatants(latants) do
     # preprocess
-    input0 = latants
+    input0 = Nx.to_binary(latants)
 
     # prediction
     output0 =
