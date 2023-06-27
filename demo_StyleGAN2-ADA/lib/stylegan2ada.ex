@@ -1,26 +1,17 @@
-defmodule StyleGAN2ADA do
-  def apply(), do: gen_latants() |> apply()
-
-  def apply(latants) do
-    latants
-    |> StyleGAN2ADA.Mapping.apply()
-    |> StyleGAN2ADA.Synthesis.apply()
-  end
-
-  def gen_latants() do
-    for _ <- 1..512, into: "", do: <<:rand.normal()::little-float-32>>
-  end
-end
-
 defmodule StyleGAN2ADA.Mapping do
   alias TflInterp, as: NNInterp
+
   use NNInterp,
     model: "./model/afhqdog.mapping.tflite",
     url: "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/afhqdog.mapping.tflite",
     inputs: [f32: {1,512}],
     outputs: [f32: {1,16.512}]
 
-  def apply(latants) do
+  def dlatants() do
+    dlatants(for _ <- 1..512, into: "", do: <<:rand.normal()::little-float-32>>)
+  end
+
+  def dlatants(latants) do
     # preprocess
     input0 = latants
 
@@ -31,7 +22,7 @@ defmodule StyleGAN2ADA.Mapping do
       |> NNInterp.get_output_tensor(0)
     
     # postprocess
-    output0
+    Nx.from_binary(output0, :f32) |> Nx.reshape({16, 512})
   end
 end
 
@@ -40,15 +31,16 @@ defmodule StyleGAN2ADA.Synthesis do
   @height 512
 
   alias TflInterp, as: NNInterp
+
   use NNInterp,
     model: "./model/afhqdog.synthesis.tflite",
     url: "https://github.com/shoz-f/tfl_interp/releases/download/0.0.1/afhqdog.synthesis.tflite",
     inputs: [f32: {1,16,512}],
     outputs: [f32: {1,3,@height,@width}]
 
-  def apply(dlatants) do
+  def image(dlatants) do
     # preprocess
-    input0 = dlatants
+    input0 = Nx.to_binary(dlatants)
 
     # prediction
     output0 = session()
