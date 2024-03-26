@@ -61,12 +61,12 @@ if(NOT EXISTS ${CMAKE_SOURCE_DIR}/3rd_party/tensorflow_src)
     message("** Download Tensorflow lite etc.")
     FetchContent_Declare(tensorflow
 	GIT_REPOSITORY https://github.com/tensorflow/tensorflow.git
-	GIT_TAG        v2.12.0
+	GIT_TAG        v2.17.0
 	GIT_SHALLOW    TRUE
 	GIT_PROGRESS   TRUE
 	SOURCE_DIR "${THIRD_PARTY}/tensorflow_src"
 	SOURCE_SUBDIR tensorflow/lite
-	PATCH_COMMAND git apply ${CMAKE_SOURCE_DIR}/tensorflow_2_12_0_lite.patch
+	#PATCH_COMMAND git apply ${CMAKE_SOURCE_DIR}/tensorflow_2_12_0_lite.patch
     )
 else()
     FetchContent_Declare(tensorflow
