@@ -4,54 +4,52 @@ defmodule TflInterp do
   Deep Learning inference framework for embedded devices.
   """
 
-  @basic_usage """
-  ## Basic Usage
-  You get the trained tflite model and save it in a directory that your application can read.
-  "your-app/priv" may be good choice.
-
-  ```
-  $ cp your-trained-model.tflite ./priv
-  ```
-
-  Next, you will create a module that interfaces with the deep learning model.
-  The module will need pre-processing and post-processing in addition to inference
-  processing, as in the example following. TflInterp provides inference processing
-  only.
-
-  You put `use TflInterp` at the beginning of your module, specify the model path as an optional argument. In the inference
-  section, you will put data input to the model (`TflInterp.set_input_tensor/3`), inference execution (`TflInterp.invoke/1`),
-  and inference result retrieval (`TflInterp.get_output_tensor/2`).
-
-  ```elixr:your_model.ex
-  defmodule YourApp.YourModel do
-    use TflInterp, model: "priv/your-trained-model.tflite"
-
-    def predict(data) do
-      # preprocess
-      #  to convert the data to be inferred to the input format of the model.
-      input_bin = convert-float32-binaries(data)
-
-      # inference
-      #  typical I/O data for Tensorflow lite models is a serialized 32-bit float tensor.
-      output_bin =
-        __MODULE__
-        |> TflInterp.set_input_tensor(0, input_bin)
-        |> TflInterp.invoke()
-        |> TflInterp.get_output_tensor(0)
-
-      # postprocess
-      #  add your post-processing here.
-      #  you may need to reshape output_bin to tensor at first.
-      tensor = output_bin
-        |> Nx.from_binary({:f, 32})
-        |> Nx.reshape({size-x, size-y, :auto})
-
-      * your-postprocessing *
-      ...
-    end
-  end
-  ```
-  """
+  # ## Basic Usage
+  # You get the trained tflite model and save it in a directory that your application can read.
+  # "your-app/priv" may be good choice.
+  #
+  # ```
+  # $ cp your-trained-model.tflite ./priv
+  # ```
+  #
+  # Next, you will create a module that interfaces with the deep learning model.
+  # The module will need pre-processing and post-processing in addition to inference
+  # processing, as in the example following. TflInterp provides inference processing
+  # only.
+  #
+  # You put `use TflInterp` at the beginning of your module, specify the model path as an optional argument. In the inference
+  # section, you will put data input to the model (`TflInterp.set_input_tensor/3`), inference execution (`TflInterp.invoke/1`),
+  # and inference result retrieval (`TflInterp.get_output_tensor/2`).
+  #
+  # ```elixr:your_model.ex
+  # defmodule YourApp.YourModel do
+  #   use TflInterp, model: "priv/your-trained-model.tflite"
+  #
+  #   def predict(data) do
+  #     # preprocess
+  #     #  to convert the data to be inferred to the input format of the model.
+  #     input_bin = convert-float32-binaries(data)
+  #
+  #     # inference
+  #     #  typical I/O data for Tensorflow lite models is a serialized 32-bit float tensor.
+  #     output_bin =
+  #       __MODULE__
+  #       |> TflInterp.set_input_tensor(0, input_bin)
+  #       |> TflInterp.invoke()
+  #       |> TflInterp.get_output_tensor(0)
+  #
+  #     # postprocess
+  #     #  add your post-processing here.
+  #     #  you may need to reshape output_bin to tensor at first.
+  #     tensor = output_bin
+  #       |> Nx.from_binary({:f, 32})
+  #       |> Nx.reshape({size-x, size-y, :auto})
+  #
+  #     * your-postprocessing *
+  #     ...
+  #   end
+  # end
+  # ```
 
   @timeout 300000
 
@@ -64,7 +62,7 @@ defmodule TflInterp do
     "libtorch"    => ".pt"
   }
   @model_suffix suffix[String.downcase(@framework)]
-  
+
   # session record
   defstruct module: nil, inputs: [], outputs: []
 
@@ -164,7 +162,7 @@ defmodule TflInterp do
     * model - path of model file
     * url - download site
   """
-  def validate_model(nil, _), do: raise ArgumentError, "need a model file \"#{@model_suffix}\"."
+  def validate_model(nil, _), do: (raise ArgumentError, "need a model file \"#{@model_suffix}\".")
   def validate_model(model, url) do
     validate_extname!(model)
 
@@ -179,7 +177,7 @@ defmodule TflInterp do
   defp validate_extname!(model) do
     actual_ext = Path.extname(model)
     unless actual_ext == @model_suffix,
-      do: raise ArgumentError, "#{@framework} expects the model file \"#{@model_suffix}\" not \"#{actual_ext}\"."
+      do: (raise ArgumentError, "#{@framework} expects the model file \"#{@model_suffix}\" not \"#{actual_ext}\".")
 
     actual_ext
   end
@@ -261,7 +259,7 @@ defmodule TflInterp do
     Enum.with_index(items, from)
     |> Enum.reduce(mod, fn {item, i}, mod -> set_input_tensor(mod, i, item) end)
   end
-  
+
   @doc """
   Get the flat binary from the output tensor on the interpreter.
 
@@ -295,7 +293,7 @@ defmodule TflInterp do
   def get_output_tensors(mod, range) do
     for i <- range, do: get_output_tensor(mod, i)
   end
-  
+
   @doc """
   Invoke prediction.
 

@@ -1,7 +1,7 @@
 defmodule TflInterp.URL do
   @doc """
   Download and process data from url.
-  
+
   ## Parameters
     * url - download site url
     * func - function to process downloaded data
@@ -17,7 +17,7 @@ defmodule TflInterp.URL do
 
   @doc """
   Download and save the file from url.
-  
+
   ## Parameters
     * url - download site url
     * path - distination path of downloaded file
@@ -67,8 +67,8 @@ defmodule TflInterp.URL do
         raise inspect(reason)
     end
   end
-  
-  defp get_loop(id, downloaded, progress \\ nil) do
+
+  defp get_loop(id, downloaded, progress) do
     receive do
       {:http, reply_info} when elem(reply_info, 0) == id ->
         case Tuple.delete_at(reply_info, 0) do
