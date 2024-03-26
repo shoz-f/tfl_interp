@@ -66,7 +66,7 @@ This line sets an environment variable that instructs your TflInterp application
 
 ```
 def deps do
-  System.put_env("SKIP_MAKE_TFLINTERP", "YES)
+  System.put_env("NNCOMPILED", "YES)
   [
     ...
     {:tfl_interp, path: "/home/{your home}/workdir/tfl_interp"}

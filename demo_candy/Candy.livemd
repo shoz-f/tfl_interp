@@ -4,7 +4,7 @@
 File.cd!(__DIR__)
 # for windows JP
 System.shell("chcp 65001")
-System.put_env("SKIP_MAKE_TFLINTERP", "YES")
+System.put_env("NNCOMPILED", "YES")
 
 Mix.install([
   {:tfl_interp, path: ".."},

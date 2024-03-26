@@ -21,12 +21,12 @@ defmodule DemoYoloX.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    System.put_env("SKIP_MAKE_TFLINTERP", "yes")
+    System.put_env("NNCOMPILED", "yes")
     [
       {:tfl_interp, path: ".."},
       {:nx, "~> 0.4.0"},
       {:cimg, "~> 0.1.19"},
-       {:postdnn, "~> 0.1.4"}
+      {:postdnn, "~> 0.1.4"}
     ]
   end
 end
