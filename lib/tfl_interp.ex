@@ -194,7 +194,7 @@ defmodule TflInterp do
   def info(mod) do
     cmd = 0
     case GenServer.call(mod, <<cmd::little-integer-32>>, @timeout) do
-      {:ok, result} ->  Poison.decode(result)
+      {:ok, result} ->  Jason.decode(result)
       any -> any
     end
   end
@@ -225,7 +225,7 @@ defmodule TflInterp do
   def set_input_tensor(mod, index, bin, opts) when is_atom(mod) do
     cmd = 1
     case GenServer.call(mod, <<cmd::little-integer-32>> <> input_tensor(index, bin, opts), @timeout) do
-      {:ok, result} ->  Poison.decode(result)
+      {:ok, result} ->  Jason.decode(result)
       any -> any
     end
     mod
@@ -320,7 +320,7 @@ defmodule TflInterp do
   def invoke(mod) when is_atom(mod) do
     cmd = 2
     case GenServer.call(mod, <<cmd::little-integer-32>>, @timeout) do
-      {:ok, result} -> Poison.decode(result)
+      {:ok, result} -> Jason.decode(result)
       any -> any
     end
     mod
@@ -379,7 +379,7 @@ defmodule TflInterp do
     cmd = 5
     case GenServer.call(mod, <<cmd::little-integer-32, num_boxes::little-integer-32, box_repr::little-integer-32, num_class::little-integer-32, iou_threshold::little-float-32, score_threshold::little-float-32, sigma::little-float-32>> <> boxes <> scores, @timeout) do
       {:ok, nil} -> :notfind
-      {:ok, result} -> Poison.decode(result)
+      {:ok, result} -> Jason.decode(result)
       any -> any
     end
   end
