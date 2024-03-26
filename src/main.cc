@@ -42,7 +42,7 @@ void usage()
       << "    option:\n"
       << "      -i <spec> : input tensor spec - \"f4,1,3,224,224\"\n"
       << "      -o <spec> : output tensor spec - \"f4,1,1000\"\n"
-      << "      -j <num>  : number of threads"
+      << "      -j <num>  : number of threads\n"
       << "      -d <num>  : diagnosis mode\n"
       << "                  1 = save the formed image\n"
       << "                  2 = save model's input/output tensors\n"
