@@ -71,11 +71,12 @@ protected:
 #define NUM_LAP 10
 
 struct SysInfo {
+    std::string     mRuntime;   // runtime name & version
     std::string     mExe;       // path of this executable
     std::string     mModelPath; // path of Tflite Model
     std::string     mLabelPath; // path of Class Labels
-    unsigned long mDiag;       // diagnosis mode
-    int            mNumThread;  // number of thread
+    unsigned long   mDiag;      // diagnosis mode
+    int             mNumThread; // number of thread
 
     TinyMLInterp* mInterp{nullptr};
 

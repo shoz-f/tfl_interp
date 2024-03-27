@@ -30,11 +30,12 @@ info(SysInfo& sys, const void*)
 {
     json res;
 
-    res["exe"  ]  = sys.mExe;
-    res["model"]  = sys.mModelPath;
-    res["label"]  = sys.mLabelPath;
-    res["class"]  = sys.mNumClass;
-    res["thread"] = sys.mNumThread;
+    res["runtime"] = sys.mRuntime;
+    res["exe"  ]   = sys.mExe;
+    res["model"]   = sys.mModelPath;
+    res["label"]   = sys.mLabelPath;
+    res["class"]   = sys.mNumClass;
+    res["thread"]  = sys.mNumThread;
 
     sys.mInterp->info(res);
 

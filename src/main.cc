@@ -48,7 +48,7 @@ void usage()
       << "                  2 = save model's input/output tensors\n"
       << "                  4 = save result of the prediction\n"
       << "\n"
-      << "(Tensorflow lite version " << TFLITE_VERSION_STRING << ")\n";
+      << "(" << gSys.mRuntime << ")\n";
  }
 
 /***  Module Header  ******************************************************}}}*/
@@ -73,6 +73,7 @@ main(int argc, char* argv[])
     };
 
     // initialize system environment
+    gSys.mRuntime   = std::string("Tensorflow-lite") + " " +  TFLITE_VERSION_STRING;
     gSys.mDiag      = 0;
     gSys.mNumThread = 4;
     gSys.reset_lap();
