@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.1.14(Mar 27 2024)
+  * Major Features and Improvements
+    * update Tensorflow lite to version 2.16.1.
+    * replace Poison with Jason module.
+
 ## Release 0.1.13(Jun 4 2023)
 
   * Major Features and Improvements

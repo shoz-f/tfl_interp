@@ -19,6 +19,8 @@
 #include "tiny_ml.h"
 #include "getopt/getopt.h"
 
+#include "tensorflow/lite/version.h"
+
 /***  Global **************************************************************}}}*/
 /**
 * system infomation
@@ -37,14 +39,17 @@ void usage()
 {
     std::cout
       << "tfl_interp [opts] <model.tflite> <class.label>\n"
-      << "\toption:\n"
-      << "\t  -i <spec> : input tensor spec - \"f4,1,3,224,224\"\n"
-      << "\t  -o <spec> : output tensor spec - \"f4,1,1000\"\n"
-      << "\t  -d <num> : diagnosis mode\n"
-      << "\t             1 = save the formed image\n"
-      << "\t             2 = save model's input/output tensors\n"
-      << "\t             4 = save result of the prediction\n";
-}
+      << "    option:\n"
+      << "      -i <spec> : input tensor spec - \"f4,1,3,224,224\"\n"
+      << "      -o <spec> : output tensor spec - \"f4,1,1000\"\n"
+      << "      -j <num>  : number of threads"
+      << "      -d <num>  : diagnosis mode\n"
+      << "                  1 = save the formed image\n"
+      << "                  2 = save model's input/output tensors\n"
+      << "                  4 = save result of the prediction\n"
+      << "\n"
+      << "(Tensorflow lite version " << TFLITE_VERSION_STRING << ")\n";
+ }
 
 /***  Module Header  ******************************************************}}}*/
 /**

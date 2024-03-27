@@ -3,9 +3,9 @@ defmodule TflInterp.PreCompiled do
 
   @url %{
     "tflite-cpu-windows-x86_64" =>
-      {"tfl_interp.exe", "https://github.com/shoz-f/tfl_interp/releases/download/0.1.12/tfl_interp-cpu-windows-x86_64.zip"},
+      {"tfl_interp.exe", "https://github.com/shoz-f/tfl_interp/releases/download/0.1.14/tfl_interp-cpu-windows-x86_64.zip"},
     "tflite-cpu-linux-x86_64" =>
-      {"tfl_interp", "https://github.com/shoz-f/tfl_interp/releases/download/0.1.12/tfl_interp-cpu-linux-x86_64.zip"},
+      {"tfl_interp", "https://github.com/shoz-f/tfl_interp/releases/download/0.1.14/tfl_interp-cpu-linux-x86_64.zip"},
   }
 
   @os_default (case :os.type() do
