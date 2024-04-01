@@ -44,7 +44,7 @@ Method-1. Like any other elixir module, add TflInterp to the dependency list in 
 def deps do
   [
     ...
-    {:tfl_interp, "~> 0.1.11"},
+    {:tfl_interp, "~> 0.1.14"},
   ]
 end
 ```
@@ -60,7 +60,7 @@ $ mix deps.get
 $ mix compile
 ```
 
-After adding the directory path to the dependency list in your mix.exs file, add the following line to the deps() function: `System.put_env("SKIP_MAKE_TFLINTERP", "YES")`
+After adding the directory path to the dependency list in your mix.exs file, add the following line to the deps() function: `System.put_env("NNCOMPILED", "YES")`
 
 This line sets an environment variable that instructs your TflInterp application to use the precompiled tfl_interp.exe file, eliminating the need to build it again.
 
