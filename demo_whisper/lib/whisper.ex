@@ -2,10 +2,10 @@ defmodule Whisper do
   alias TflInterp, as: NNInterp
   use NNInterp,
     model: "./model/whisper-tiny.en.tflite",
-    #url: "https://github.com/shoz-f/tinyML_livebook/releases/download/model/yolox_s.tflite",
+    url: "https://github.com/shoz-f/tfl_interp/raw/main/demo_whisper/model/whisper-tiny.en.zip",
     inputs: [f32: {1,80,3000}],
     outputs: [s32: {1,224}],
-    priv: load_vocab()
+    priv: &load_vocab/0
 
   # Whisper vocablary holder.
   defstruct decoder: nil, added_decoder: nil, special_ids: nil

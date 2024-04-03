@@ -97,6 +97,8 @@ defmodule TflInterp do
           :binary
         ])
 
+        nn_priv = if is_function(nn_priv), do: nn_priv.(), else: nn_priv
+
         {:ok, %{port: port, itempl: nn_inputs, otempl: nn_outputs, priv: nn_priv}}
       end
 
