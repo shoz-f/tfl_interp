@@ -12,26 +12,24 @@ defmodule Whisper do
 
   @doc """
   """
-  def apply(wav) do
+  def apply(feature) do
     # preprocess
-    input0 = wav.data
 
     # prediction
-    output = session()
-      |> NNInterp.set_input_tensor(0, input0)
+    session()
+      |> NNInterp.set_input_tensor(0, feature)
       |> NNInterp.invoke()
       |> NNInterp.get_output_tensor(0)
       |> then(fn output -> (for <<id::32-little <- output>>, do: id) end)
 
     # postprocess
-    decode(output, vocab())
   end
 
   # basic decoder to convert from ids to string.
   @u0000  Enum.concat([?!..?~, ?¡..?¬, ?®..?ÿ])
   @u2b    Map.new(Enum.map(@u0000, &{<<&1::utf8>>, &1}) ++ Enum.with_index(Enum.reject(0..255, &(&1 in @u0000)), &{<<&2+0x100::utf8>>, &1}))
 
-  defp decode(ids, %{decoder: decoder, added_decoder: added_decoder, special_ids: special_ids}) do
+  def decode(ids, %{decoder: decoder, added_decoder: added_decoder, special_ids: special_ids}) do
     # convert ids to tokens.
     (for id <- ids, id not in special_ids, do: (added_decoder[id] || decoder[id] || ""))
     # convert tokens to string. (unicode2byte)
