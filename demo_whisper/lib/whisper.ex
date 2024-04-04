@@ -5,7 +5,7 @@ defmodule Whisper do
     url: "https://github.com/shoz-f/tfl_interp/raw/main/demo_whisper/model/whisper-tiny.en.zip",
     inputs: [f32: {1,80,3000}],
     outputs: [s32: {1,224}],
-    priv: &load_vocab/0
+    memo: &load_vocab/0
 
   # Whisper vocablary holder.
   defstruct decoder: nil, added_decoder: nil, special_ids: nil
@@ -51,7 +51,7 @@ defmodule Whisper do
   Get tables of Whisper vocablay for decoding ids to tokens.
   """
   def vocab() do
-    case NNInterp.get_priv(__MODULE__) do
+    case NNInterp.get_memo(__MODULE__) do
       %Whisper{}=vocab -> vocab
       _ -> load_vocab()
     end

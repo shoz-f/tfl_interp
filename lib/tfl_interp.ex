@@ -89,7 +89,7 @@ defmodule TflInterp do
         nn_inputs  = Keyword.get(opts, :inputs, [])
         nn_outputs = Keyword.get(opts, :outputs, [])
         nn_opts    = Keyword.get(opts, :opts, "")
-        nn_priv    = Keyword.get(opts, :priv, nil)
+        nn_memo    = Keyword.get(opts, :memo, nil)
 
         port = Port.open({:spawn_executable, executable}, [
           {:args, String.split(nn_opts) ++ opt_tspecs("--inputs", nn_inputs) ++ opt_tspecs("--outputs", nn_outputs) ++ [nn_model, nn_label]},
@@ -97,9 +97,9 @@ defmodule TflInterp do
           :binary
         ])
 
-        nn_priv = if is_function(nn_priv), do: nn_priv.(), else: nn_priv
+        nn_memo = if is_function(nn_memo), do: nn_memo.(), else: nn_memo
 
-        {:ok, %{port: port, itempl: nn_inputs, otempl: nn_outputs, priv: nn_priv}}
+        {:ok, %{port: port, itempl: nn_inputs, otempl: nn_outputs, memo: nn_memo}}
       end
 
       def session() do
@@ -124,8 +124,8 @@ defmodule TflInterp do
         {:reply, {:ok, Enum.at(template, index)}, state}
       end
 
-      def handle_call(:priv, _from, %{priv: priv}=state) do
-        {:reply, {:ok, priv}, state}
+      def handle_call(:memo, _from, %{memo: memo}=state) do
+        {:reply, {:ok, memo}, state}
       end
 
       def terminate(_reason, state) do
@@ -417,8 +417,8 @@ defmodule TflInterp do
 
   def adjust2letterbox(nms_result, _), do: nms_result
 
-  def get_priv(mod) do
-    case GenServer.call(mod, :priv, @timeout) do
+  def get_memo(mod) do
+    case GenServer.call(mod, :memo, @timeout) do
       {:ok, result} ->  result
       any -> any
     end
