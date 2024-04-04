@@ -39,7 +39,15 @@ defmodule TflInterp.URL do
     File.mkdir_p(path)
 
     Path.join(path, name)
-    |> save(response.body)
+
+    case response.body do
+      <<"PK", _rest::binary>> -> unzip(path, response.body)
+      _ -> save(Path.join(path, name), response.body)
+    end
+  end
+
+  defp unzip(path, bin) do
+    :zip.unzip(bin, cwd: ~c"#{path}")
   end
 
   defp save(file, bin) do
