@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.1.15(Apl 21 2024)
+  * Major Features and Improvements
+    * model downloader can handle the zip compressed file - downloading the zip and extract it.
+    * tfl_interp GenServer state has the 'memo' slot to keep private data for any purpose. ex. vocablary dict.
+
 ## Release 0.1.14(Mar 27 2024)
   * Major Features and Improvements
     * update Tensorflow lite to version 2.16.1.
