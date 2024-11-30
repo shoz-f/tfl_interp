@@ -1,0 +1,15 @@
+diff --git a/src/x86/windows/init.c b/src/x86/windows/init.c
+index d233280..19a94a7 100644
+--- a/src/x86/windows/init.c
++++ b/src/x86/windows/init.c
+@@ -16,6 +16,10 @@
+ #define CPUINFO_ALLOCA _alloca
+ #endif
+ 
++#ifdef __MINGW32__
++#define max __max
++#endif
++
+ static inline uint32_t bit_mask(uint32_t bits) {
+ 	return (UINT32_C(1) << bits) - UINT32_C(1);
+ }

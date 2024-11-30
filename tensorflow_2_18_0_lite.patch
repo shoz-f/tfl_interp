@@ -1,0 +1,77 @@
+diff --git a/tensorflow/lite/delegates/xnnpack/weight_cache.cc b/tensorflow/lite/delegates/xnnpack/weight_cache.cc
+index da220a3a..9ced4ff0 100644
+--- a/tensorflow/lite/delegates/xnnpack/weight_cache.cc
++++ b/tensorflow/lite/delegates/xnnpack/weight_cache.cc
+@@ -17,7 +17,7 @@ limitations under the License.
+ #include <fcntl.h>
+ #include <sys/stat.h>
+ 
+-#if defined(_MSC_VER)
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ #include <io.h>
+ #define F_OK 0
+ #else
+@@ -167,7 +167,7 @@ bool MMapHandle::Map(const FileDescriptor& fd, const size_t offset,
+   ScopeGuard unmap_on_error([this] { UnMap(); });
+   size_ = file_stats.st_size - offset;
+   offset_ = offset;
+-#if defined(_MSC_VER)
++#if defined(_MSC_VER) || defined(__MINGW32__)
+   // This allocation is freed in UnMap and in the desctructor.
+   data_ = new uint8_t[size_];
+   fd.SetPos(offset);
+@@ -206,7 +206,7 @@ bool MMapHandle::Resize(size_t new_size) {
+ 
+ void MMapHandle::UnMap() {
+   if (data_) {
+-#if defined(_MSC_VER)
++#if defined(_MSC_VER) || defined(__MINGW32__)
+     delete[] data_;
+ #else
+     munmap(data_, size_);
+diff --git a/tensorflow/lite/profiling/time.cc b/tensorflow/lite/profiling/time.cc
+index da3d7b8c..3cf5ff84 100644
+--- a/tensorflow/lite/profiling/time.cc
++++ b/tensorflow/lite/profiling/time.cc
+@@ -14,7 +14,7 @@ limitations under the License.
+ ==============================================================================*/
+ #include "tensorflow/lite/profiling/time.h"
+ 
+-#if defined(_MSC_VER)
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ #include <chrono>  // NOLINT(build/c++11)
+ #include <thread>  // NOLINT(build/c++11)
+ #else
+@@ -26,7 +26,7 @@ namespace tflite {
+ namespace profiling {
+ namespace time {
+ 
+-#if defined(_MSC_VER)
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ 
+ uint64_t NowMicros() {
+   return static_cast<uint64_t>(
+diff --git a/tensorflow/lite/tools/cmake/modules/cpuinfo.cmake b/tensorflow/lite/tools/cmake/modules/cpuinfo.cmake
+index ba2a2596..cce1d729 100644
+--- a/tensorflow/lite/tools/cmake/modules/cpuinfo.cmake
++++ b/tensorflow/lite/tools/cmake/modules/cpuinfo.cmake
+@@ -26,6 +26,7 @@ OverridableFetchContent_Declare(
+   GIT_TAG fa1c679da8d19e1d87f20175ae1ec10995cd3dd3
+   GIT_PROGRESS TRUE
+   SOURCE_DIR "${CMAKE_BINARY_DIR}/cpuinfo"
++  PATCH_COMMAND git apply ${CMAKE_SOURCE_DIR}/cpuinfo_fa1c.patch
+ )
+ OverridableFetchContent_GetProperties(cpuinfo)
+ if(NOT cpuinfo_POPULATED)
+diff --git a/tensorflow/lite/tools/cmake/modules/gemmlowp.cmake b/tensorflow/lite/tools/cmake/modules/gemmlowp.cmake
+index 76d97054..55adf4d6 100644
+--- a/tensorflow/lite/tools/cmake/modules/gemmlowp.cmake
++++ b/tensorflow/lite/tools/cmake/modules/gemmlowp.cmake
+@@ -31,6 +31,7 @@ OverridableFetchContent_Declare(
+   # GIT_SHALLOW TRUE
+   GIT_PROGRESS TRUE
+   SOURCE_DIR "${CMAKE_BINARY_DIR}/gemmlowp"
++  PATCH_COMMAND git apply ${CMAKE_SOURCE_DIR}/gemmlowp_16e8.patch
+ )
+ 
+ OverridableFetchContent_GetProperties(gemmlowp)

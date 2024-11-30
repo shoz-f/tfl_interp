@@ -1,0 +1,13 @@
+diff --git a/contrib/CMakeLists.txt b/contrib/CMakeLists.txt
+index a5909e8..9c44329 100644
+--- a/contrib/CMakeLists.txt
++++ b/contrib/CMakeLists.txt
+@@ -18,7 +18,7 @@ find_package(Threads REQUIRED)
+ 
+ get_filename_component(gemmlowp_src ${gemmlowp_SOURCE_DIR} PATH)
+ 
+-if(WIN32)
++if(MSVC)
+   # one can enable simd from the cmake command line, ie -DCMAKE_CXX_FLAGS="/arch:AVX2
+   add_definitions(-DNOMINMAX -DWIN64 -DWIN32_LEAN_AND_MEAN -DNOGDI)
+   add_definitions(/bigobj /nologo /EHsc /GF /MP /Gm- /wd4800 /wd4805 /wd4244)

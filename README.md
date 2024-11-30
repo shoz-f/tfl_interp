@@ -23,14 +23,14 @@ Reflecting on that mistake, I redesigned Tflinterp according to the above design
 ## Platform
 It has been confirmed to work in the following OS environment.
 
-- Windows Visual C++ 2019
+- (Windows) MSYS2 MINGW64 gcc 13.2.0-2
 - WSL2/Ubuntu 20.04
 - Nerves ARMv6, ARMv7NEON and AArch64
 
 ## Requirements
-- cmake 3.18.6 or later
+- cmake 3.21.0 or later
 - git
-- Visual C++ 2019 for Windows
+- MINGW64 gcc 13.2.0-2
 
 ## Installation
 Since 0.1.3, the installation method of this module has changed.

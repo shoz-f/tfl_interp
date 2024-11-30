@@ -22,19 +22,14 @@ set(NERVES_ARMV6 rpi rpi0)
 set(NERVES_ARMV7NEON rpi2 rpi3 rpi3a bbb osd32mp1)
 set(NERVES_AARCH64 rpi4)
 
-if(MSVC)
-    # empty now
-
-elseif("$ENV{MIX_TARGET}" IN_LIST NERVES_ARMV6)
+if("$ENV{MIX_TARGET}" IN_LIST NERVES_ARMV6)
     message("Target is ARMv6")
     message("...donwload toolchain")
     include(toolchain_armv6.cmake)
-
 elseif("$ENV{MIX_TARGET}" IN_LIST NERVES_ARMV7NEON)
     message("Target is ARMv7NEON")
     message("...donwload toolchain")
     include(toolchain_armv7neon.cmake)
-
 elseif("$ENV{MIX_TARGET}" IN_LIST NERVES_AARCH64)
     message("AArch64 has not been testes yet!!!\n...donwload toolchain")
     include(toolchain_aarch64.cmake)
@@ -45,6 +40,10 @@ endif()
 project(tfl_interp CXX C)
 
 install(CODE "set(CMAKE_INSTALL_LOCAL_ONLY ON)")
+
+if(MSVC)
+    # empty now
+endif()
 
 # check requirements
 find_package(Patch)
@@ -61,12 +60,12 @@ if(NOT EXISTS ${CMAKE_SOURCE_DIR}/3rd_party/tensorflow_src)
     message("** Download Tensorflow lite etc.")
     FetchContent_Declare(tensorflow
 	GIT_REPOSITORY https://github.com/tensorflow/tensorflow.git
-	GIT_TAG        v2.16.1
+	GIT_TAG        v2.18.0
 	GIT_SHALLOW    TRUE
 	GIT_PROGRESS   TRUE
 	SOURCE_DIR "${THIRD_PARTY}/tensorflow_src"
 	SOURCE_SUBDIR tensorflow/lite
-	#PATCH_COMMAND git apply ${CMAKE_SOURCE_DIR}/tensorflow_2_12_0_lite.patch
+	PATCH_COMMAND git apply ${CMAKE_SOURCE_DIR}/tensorflow_2_18_0_lite.patch
     )
 else()
     FetchContent_Declare(tensorflow
