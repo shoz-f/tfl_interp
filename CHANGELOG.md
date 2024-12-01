@@ -2,7 +2,7 @@
 
 ## Release 0.1.16(Nov 30 2024)
   * Major Features and Improvements
-    * update Tensorflow lite to version 2.18.0. (build by MNGW64 gcc)
+    * update Tensorflow lite to version 2.18.0.
 
 ## Release 0.1.15(Apl 21 2024)
   * Major Features and Improvements

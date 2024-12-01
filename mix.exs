@@ -34,6 +34,7 @@ defmodule TflInterp.MixProject do
   defp deps do
     [
       {:castore, "~> 0.1.19"},
+      {:progress_bar, "~> 2.0"},
       {:mix_cmake, "~> 0.1.5"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:jason, "~> 1.4"}
@@ -70,11 +71,11 @@ defmodule TflInterp.MixProject do
     [
       # Specify generator name.
       # "cmake --help" shows you build-in generators list.
-      #generator: "Visual Studio 16 2022",
-      generator: "MSYS Makefiles",
+      generator: "Visual Studio 17 2022",
+      #generator: "MSYS Makefiles",
 
       # Specify CPU architecture
-      #platform: "x64",
+      platform: "x64",
 
       # Visual C++ configuration
       build_config: "Release"
