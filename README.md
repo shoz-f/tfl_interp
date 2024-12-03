@@ -23,14 +23,14 @@ Reflecting on that mistake, I redesigned Tflinterp according to the above design
 ## Platform
 It has been confirmed to work in the following OS environment.
 
-- (Windows) MSYS2 MINGW64 gcc 13.2.0-2
+- Windows
 - WSL2/Ubuntu 20.04
 - Nerves ARMv6, ARMv7NEON and AArch64
 
 ## Requirements
 - cmake 3.21.0 or later
 - git
-- MINGW64 gcc 13.2.0-2
+- Visual C++ 2022(Windows)
 
 ## Installation
 Since 0.1.3, the installation method of this module has changed.
@@ -44,7 +44,7 @@ Method-1. Like any other elixir module, add TflInterp to the dependency list in 
 def deps do
   [
     ...
-    {:tfl_interp, "~> 0.1.14"},
+    {:tfl_interp, "~> 0.1.16"},
   ]
 end
 ```
